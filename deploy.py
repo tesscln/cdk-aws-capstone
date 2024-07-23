@@ -33,7 +33,7 @@ def get_assets_info():
             unit = input("Enter property unit: ")
             properties.append({"name": prop_name, "dataType": data_type, "unit": unit})
         
-        assets.append({"name": name}, "properties": properties)
+        assets.append({"name": name, "properties": properties})
     
     return assets
 
