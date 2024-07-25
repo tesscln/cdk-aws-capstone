@@ -4,7 +4,7 @@ import os
 # Defining a function collecting user input for asset model and properties
 
 def get_asset_model_info():
-    valid_data_types = ["Integer", "Double", "Boolean", "String"]
+    valid_data_types = ["INTEGER", "STRING", "BOOLEAN", "DOUBLE"]
     asset_model_name = input("Enter the asset model name: ")
     num_properties = int(input("Enter the number of properties: "))
     properties = []
