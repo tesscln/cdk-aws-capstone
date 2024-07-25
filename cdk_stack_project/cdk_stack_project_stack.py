@@ -58,10 +58,7 @@ class CdkStackProjectStack(Stack):
                     id=prop.get('id', ""),
                     logical_id=prop['name'],
                     notification_state=prop.get('notification_state', "ENABLED"),
-                    unit=prop.get('unit', ""),
-                    type=sitewise.CfnAssetModel.PropertyTypeProperty(
-                        type_name=prop.get('type', 'MEASUREMENT').upper()  # Use the appropriate type name
-                    )
+                    unit=prop.get('unit', "")
                 ) for prop in asset['properties']
             ]
     
