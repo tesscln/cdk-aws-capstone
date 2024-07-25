@@ -43,18 +43,24 @@ def get_assets_info(properties):
         assets.append({"name": name, "properties": asset_properties})
     
     return assets
-
 if __name__ == "__main__":
     asset_model_name, asset_properties = get_asset_model_info()
     print("Asset Model Info:", asset_model_name, asset_properties)
     assets = get_assets_info(asset_properties)
     print("Assets Info:", assets)
 
-    # Deploy the stack with the collected input
+    # Serialize to JSON
+    asset_properties_json = json.dumps(asset_properties)
+    assets_json = json.dumps(assets)
 
+    # Print JSON outputs for inspection
+    print("Serialized assetProperties:", asset_properties_json)
+    print("Serialized assets:", assets_json)
+
+    # Deploy the stack with the collected input
     deploy_command = f'cdk deploy --context assetModelName="{asset_model_name}" ' \
-                     f'--context \'assetProperties={json.dumps(asset_properties)}\' ' \
-                     f'--context \'assets={json.dumps(assets)}\''
+                     f'--context \'assetProperties={asset_properties_json}\' ' \
+                     f'--context \'assets={assets_json}\''
 
     print("Deploy command:", deploy_command)
     os.system(deploy_command)

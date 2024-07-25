@@ -53,7 +53,6 @@ class CdkStackProjectStack(Stack):
         for asset in assets:
             asset_properties = [
                 sitewise.CfnAsset.AssetPropertyProperty(
-                    name=prop['name'],
                     data_type=prop['dataType'],
                     alias=prop.get('alias', ""),
                     external_id=prop.get('external_id', ""),
