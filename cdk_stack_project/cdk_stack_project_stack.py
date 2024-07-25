@@ -11,7 +11,14 @@ class CdkStackProjectStack(Stack):
                  asset_properties: list, assets: list, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
-        print("Asset Model Properties Input:", asset_properties)
+        # Retrieve context variables
+        asset_model_name = self.node.try_get_context('assetModelName')
+        asset_properties = self.node.try_get_context('assetProperties')
+        assets = self.node.try_get_context('assets')
+
+        print("Asset Model Name:", asset_model_name)
+        print("Asset Properties:", asset_properties)
+        print("Assets:", assets)
 
         if not isinstance(asset_properties, list) or not all(isinstance(prop, dict) for prop in asset_properties):
             raise ValueError("asset_properties must be a list of dictionaries")
