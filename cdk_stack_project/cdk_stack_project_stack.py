@@ -1,13 +1,13 @@
 from aws_cdk import (
-    core,
+    Stack,
     aws_iot as iot,
     aws_iotsitewise as sitewise
 )
 from constructs import Construct
 
-class CdkStackProjectStack(core.Stack):
+class CdkStackProjectStack(Stack):
 
-    def __init__(self, scope: core.Construct, construct_id: str, asset_model_name: str,
+    def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
                  asset_properties: list, assets: list, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 

@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import os
 
-from aws_cdk import core
+from aws_cdk import App
 
 from cdk_stack_project.cdk_stack_project_stack import CdkStackProjectStack
 
+app = App()
 
-app = core.App()
 
 # Reading context variables:
 
