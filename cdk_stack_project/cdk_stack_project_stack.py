@@ -23,9 +23,9 @@ class CdkStackProjectStack(Stack):
                 name=prop['name'],
                 data_type=prop['dataType'].upper(),  # Ensure DataType is in uppercase
                 unit=prop.get('unit', ""),
-                type={
-                    "measurement": {}  # Use the appropriate type (e.g., "measurement")
-                },
+                type=sitewise.CfnAssetModel.PropertyTypeProperty(
+                    type_name="Measurement"  
+                ),
                 external_id=prop.get('externalId', ""),
                 id=prop.get('id', ""),
                 logical_id=prop.get('logicalId', "")
