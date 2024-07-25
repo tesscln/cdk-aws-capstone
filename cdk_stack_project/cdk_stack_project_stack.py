@@ -50,15 +50,15 @@ class CdkStackProjectStack(Stack):
         for asset in assets:
             asset_properties = [
                 sitewise.CfnAsset.AssetPropertyProperty(
-                    property_name=prop['name'],
-                    data_type=prop['dataType'],
-                    unit=prop.get('unit', ""),
-                    type=sitewise.CfnAssetModel.PropertyTypeProperty(
-                        type_name="Measurement"
-                    )
+                    alias=prop.get('alias', ""),
+                    external_id=prop.get('external_id', ""),
+                    id=prop.get('id', ""),
+                    logical_id=prop['name'],
+                    notification_state=prop.get('notification_state', "ENABLED"),
+                    unit=prop.get('unit', "")
                 ) for prop in asset['properties']
             ]
-
+    
             sitewise.CfnAsset(self, f"{asset['name']}Asset",
                               asset_name=asset['name'],
                               asset_model_id=asset_model.ref,
