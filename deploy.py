@@ -1,7 +1,11 @@
 import json
 import os
+import uuid  # To generate a logicalId for the asset if the user does not provide one.
 
 # Defining a function collecting user input for asset model and properties
+
+def generate_logical_id():
+    return str(uuid.uuid4())
 
 def get_asset_model_info():
     valid_data_types = ["INTEGER", "STRING", "BOOLEAN", "DOUBLE"]
@@ -16,7 +20,10 @@ def get_asset_model_info():
             print("Invalid data type. Please enter one of the following:", ", ".join(valid_data_types))
             data_type = input(f"Enter property data type ({', '.join(valid_data_types)}): ")
         unit = input("Enter property unit: ")
-        properties.append({"name": name, "dataType": data_type, "unit": unit})
+        logical_id = input("Enter property logical ID (or press enter to automatically generate a uuid): ")
+        if not logical_id:
+            logical_id = generate_logical_id()
+        properties.append({"name": name, "dataType": data_type, "unit": unit, "logicalId": logical_id})
 
     return asset_model_name, properties
 
@@ -38,11 +45,13 @@ def get_assets_info(properties):
                 prop_name = input(f"Enter property name (choose from {', '.join([p['name'] for p in properties])}): ")
             prop_data_type = next(p['dataType'] for p in properties if p['name'] == prop_name)
             prop_unit = next(p['unit'] for p in properties if p['name'] == prop_name)
-            asset_properties.append({"name": prop_name, "dataType": prop_data_type, "unit": prop_unit})
+            prop_logical_id = next(p['logicalId'] for p in properties if p['name'] == prop_name)
+            asset_properties.append({"name": prop_name, "dataType": prop_data_type, "unit": prop_unit, "logicalId": prop_logical_id})
         
         assets.append({"name": name, "properties": asset_properties})
     
     return assets
+
 if __name__ == "__main__":
     asset_model_name, asset_properties = get_asset_model_info()
     print("Asset Model Info:", asset_model_name, asset_properties)
@@ -65,5 +74,5 @@ if __name__ == "__main__":
     )
 
     print("Deploy command:", deploy_command)
-    
+
     os.system(deploy_command)
