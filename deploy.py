@@ -10,11 +10,15 @@ def generate_logical_id():
 def get_asset_model_info():
     valid_data_types = ["INTEGER", "STRING", "BOOLEAN", "DOUBLE"]
     asset_model_name = input("Enter the asset model name: ")
+    while not asset_model_name:
+        asset_model_name = input("Asset model name is required to create an asset model. Enter the asset model name: ")
     num_properties = int(input("Enter the number of properties: "))
     properties = []
 
     for _ in range(num_properties):
         name = input("Enter property name: ")
+        while not name:
+            name = input("Propety name is required to create a property. Enter the property name: ")
         data_type = input(f"Enter property data type ({', '.join(valid_data_types)}): ")
         while data_type not in valid_data_types:
             print("Invalid data type. Please enter one of the following:", ", ".join(valid_data_types))
@@ -30,12 +34,23 @@ def get_asset_model_info():
 # Now, defining a function collecting user input for assets
 
 def get_assets_info(properties):
-    num_assets = int(input("Enter the number of assets: "))
+
+    while True:
+        num_assets = input("Enter the number of assets: ")
+        try:
+            num_assets = int(num_assets)
+            if num_assets > 0:
+                break
+            else:
+                print("Number of assets must be greater than 0.")
+        except ValueError:
+            print("Invalid input. Please enter a valid number.")
+
     assets = []
 
     for _ in range(num_assets):
         name = input("Enter asset name: ")
-        num_properties = int(input("Enter the number of properties for asset {name}: "))
+        num_properties = int(input(f"Enter the number of properties for asset {name}: ")) 
         asset_properties = []
 
         for _ in range(num_properties):
