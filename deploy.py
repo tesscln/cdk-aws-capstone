@@ -44,15 +44,17 @@ def get_assets_info(properties):
     
     return assets
 
-# Running the functions to get user input
+if __name__ == "__main__":
+    asset_model_name, asset_properties = get_asset_model_info()
+    print("Asset Model Info:", asset_model_name, asset_properties)
+    assets = get_assets_info(asset_properties)
+    print("Assets Info:", assets)
 
-asset_model_name, model_properties = get_asset_model_info()
-assets = get_assets_info(model_properties)
+    # Deploy the stack with the collected input
 
-# Deploy the stack with the collected input
+    deploy_command = f'cdk deploy --context assetModelName="{asset_model_name}" ' \
+                     f'--context \'assetProperties={json.dumps(asset_properties)}\' ' \
+                     f'--context \'assets={json.dumps(assets)}\''
 
-deploy_command = f'cdk deploy --context assetModelName="{asset_model_name}" ' \
-                 f'--context \'assetProperties={json.dumps(model_properties)}\' ' \
-                 f'--context \'assets={json.dumps(assets)}\''
-
-os.system(deploy_command)
+    print("Deploy command:", deploy_command)
+    os.system(deploy_command)
