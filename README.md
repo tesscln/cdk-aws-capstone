@@ -62,3 +62,5 @@ CDK template for Spatial Computing pipeline:
 This CF stack enables one to deploy a pipeline connecting 3D CAD assets to data streams coming from IoT sensors. It follows the below diagram architecture. (cf diagram drawio)
 
 First, it creates a rule in AWS IoT (former AWS IoT Core) matching the data streams published in a MQTT messages topic to the corresponding assets created in AWS IoT SiteWise. Next, these assets are synchronized in AWS IoT TwinMaker and a digital twin representation is created. 
+
+# Testing the versions of brnahcessfnezklfjzeljgz
