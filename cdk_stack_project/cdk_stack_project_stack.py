@@ -12,9 +12,9 @@ class CdkStackProjectStack(Stack):
         super().__init__(scope, construct_id, **kwargs)
 
         # Retrieve context variables
-        asset_model_name = self.node.try_get_context('assetModelName')
-        asset_properties = self.node.try_get_context('assetProperties')
-        assets = self.node.try_get_context('assets')
+       # asset_model_name = self.node.try_get_context('assetModelName')
+        #asset_properties = self.node.try_get_context('assetProperties')
+        #assets = self.node.try_get_context('assets')
 
         print("Asset Model Name:", asset_model_name)
         print("Asset Properties:", asset_properties)
