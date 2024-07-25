@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 import os
-
+import json
 from aws_cdk import App
 
 from cdk_stack_project.cdk_stack_project_stack import CdkStackProjectStack
@@ -14,10 +14,20 @@ asset_model_name = app.node.try_get_context("assetModelName")
 asset_properties = app.node.try_get_context("assetProperties")
 assets = app.node.try_get_context("assets")
 
+# Ensure context variables are parsed correctly
+if isinstance(asset_properties, str):
+    asset_properties = json.loads(asset_properties)
+if isinstance(assets, str):
+    assets = json.loads(assets)
+
+print("Asset Model Name:", asset_model_name)
+print("Asset Properties:", asset_properties)
+print("Assets:", assets)
+
 CdkStackProjectStack(app, "CdkStackProjectStack",
-                     asset_model_name=asset_model_name,
-                     asset_properties=asset_properties,
-                     assets=assets
+                     asset_model_name,
+                     asset_properties,
+                     assets
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
