@@ -19,14 +19,14 @@ class CdkStackProjectStack(Stack):
         # Defining an IoT SiteWise asset model:
 
         asset_model_properties = [
-            {
-                "name": prop['name'],
-                "dataType": prop['dataType'],
-                "unit": prop.get('unit', ""),
-                "type": {
-                    "measurement": {}
-                }
-            } for prop in asset_properties
+            sitewise.CfnAssetModel.AssetModelPropertyProperty(
+                name=prop['name'],
+                data_type=prop['dataType'],
+                unit=prop.get('unit', ""),
+                type=sitewise.CfnAssetModel.PropertyTypeProperty(
+                    type_name="Measurement"
+                )
+            ) for prop in asset_properties
         ]
 
         asset_model = sitewise.CfnAssetModel(
@@ -49,14 +49,14 @@ class CdkStackProjectStack(Stack):
 
         for asset in assets:
             asset_properties = [
-                {
-                    "name": prop['name'],
-                    "dataType": prop['dataType'],
-                    "unit": prop.get('unit', ""),
-                    "type": {
-                        "measurement": {}
-                    }
-                } for prop in asset['properties']
+                sitewise.CfnAsset.AssetPropertyProperty(
+                    name=prop['name'],
+                    data_type=prop['dataType'],
+                    unit=prop.get('unit', ""),
+                    type=sitewise.CfnAssetModel.PropertyTypeProperty(
+                        type_name="Measurement"
+                    )
+                ) for prop in asset['properties']
             ]
 
             sitewise.CfnAsset(self, f"{asset['name']}Asset",
