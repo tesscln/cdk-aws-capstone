@@ -50,7 +50,7 @@ def get_assets_info(properties):
 
     for _ in range(num_assets):
         name = input("Enter asset name: ")
-        num_properties = int(input(f"Enter the number of properties for asset {name}: ")) 
+        num_properties = int(input(f"Enter the number of properties for asset {name}: "))
         asset_properties = []
 
         for _ in range(num_properties):
@@ -67,11 +67,50 @@ def get_assets_info(properties):
     
     return assets
 
+# Function to collect MQTT topic subscription information
+def get_mqtt_topics():
+    num_topics = int(input("Enter the number of MQTT topics to subscribe to: "))
+    topics = []
+
+    for _ in range(num_topics):
+        topic = input("Enter the MQTT topic name to subscribe to: ")
+        topics.append(topic)
+    
+    return topics
+
+# Function to collect IoT Core rules information
+def get_rules_info(assets):
+    num_rules = int(input("Enter the number of rules (each rule will link data streams from sensors to a specific asset i.e. create one rule/asset): "))
+    rules = []
+
+    for _ in range(num_rules):
+        rule_name = input("Enter the rule name (e.g. RuleAsset1): ")
+        mqtt_topic = input("Enter the MQTT message topic name (the one you subscribed to): ")
+        rule_actions = []
+
+        for asset in assets:
+            for prop in asset['properties']:
+                sensor_data = input(f"Enter the sensor data name for asset '{asset['name']}' property '{prop['name']}': ")
+                rule_actions.append({
+                    "assetName": asset['name'],
+                    "propertyName": prop['name'],
+                    "sensorData": sensor_data,
+                    "mqttTopic": mqtt_topic
+                })
+
+        rules.append({"ruleName": rule_name, "actions": rule_actions})
+
+    return rules
+
 if __name__ == "__main__":
     asset_model_name, asset_properties = get_asset_model_info()
     print("Asset Model Info:", asset_model_name, asset_properties)
     assets = get_assets_info(asset_properties)
     print("Assets Info:", assets)
+    mqtt_topics = get_mqtt_topics()
+    print("MQTT Topics:", mqtt_topics)
+    rules = get_rules_info(assets)
+    print("Rules Info:", rules)
 
     # Serialize to JSON
     asset_properties_json = json.dumps(asset_properties)
@@ -86,6 +125,8 @@ if __name__ == "__main__":
         f'cdk deploy --context assetModelName="{asset_model_name}" ' 
         f'--context \'assetProperties={asset_properties_json}\' ' 
         f'--context \'assets={assets_json}\''
+        f'--context \'rules={json.dumps(rules)}\''
+        f'--context \'mqttTopics={json.dumps(mqtt_topics)}\''
     )
 
     print("Deploy command:", deploy_command)

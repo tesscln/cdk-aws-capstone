@@ -8,7 +8,7 @@ from constructs import Construct
 class CdkStackProjectStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
-                 asset_properties: list, assets: list, **kwargs) -> None:
+                 asset_properties: list, assets: list, rules: list, mqtt_topics: list, **kwargs) -> None:
         super().__init__(scope, construct_id, **kwargs)
 
         # Retrieve context variables
@@ -69,6 +69,60 @@ class CdkStackProjectStack(Stack):
                               asset_model_id=asset_model.ref,
                               asset_properties=asset_properties)
             
+        print("Rules Input:", rules)
+
+        # Create IoT Core rules
+        for rule in rules:
+            sql_statement = f"SELECT {', '.join([action['sensorData'] for action in rule['actions']])}, timeInSeconds FROM '{rule['actions'][0]['mqttTopic']}'"
+            actions = [
+                iot.CfnTopicRule.ActionProperty(
+                    iot_site_wise=iot.CfnTopicRule.IotSiteWiseActionProperty(
+                        role_arn="<YOUR_ROLE_ARN>",
+                        put_asset_property_value_entries=[
+                            iot.CfnTopicRule.PutAssetPropertyValueEntryProperty(
+                                entry_id=f"{action['assetName']}-{action['propertyName']}",
+                                asset_id="<ASSET_ID>",
+                                property_id="<PROPERTY_ID>",
+                                property_values=[
+                                    iot.CfnTopicRule.AssetPropertyValueProperty(
+                                        value=iot.CfnTopicRule.AssetPropertyVariantProperty(
+                                            double_value="$.sensordata"
+                                        ),
+                                        timestamp=iot.CfnTopicRule.AssetPropertyTimestampProperty(
+                                            time_in_seconds="$.timeInSeconds"
+                                        ),
+                                        quality="GOOD"
+                                    )
+                                ]
+                            ) for action in rule['actions']
+                        ]
+                    )
+                )
+            ]
+
+            iot.CfnTopicRule(self, rule['ruleName'],
+                             topic_rule_payload=iot.CfnTopicRule.TopicRulePayloadProperty(
+                                 sql=sql_statement,
+                                 actions=actions,
+                                 rule_disabled=False
+                             ))
+            
+        # Create MQTT topic subscriptions
+
+        for topic in mqtt_topics:
+            iot.CfnTopicRule(self, f"{topic}Subscription",
+                             topic_rule_payload=iot.CfnTopicRule.TopicRulePayloadProperty(
+                                 sql=f"SELECT * FROM '{topic}'",
+                                 actions=[
+                                     iot.CfnTopicRule.ActionProperty(
+                                         sns=iot.CfnTopicRule.SnsActionProperty(
+                                             target_arn="<YOUR_SNS_TOPIC_ARN>",
+                                             role_arn="<YOUR_ROLE_ARN>"
+                                         )
+                                     )
+                                 ],
+                                 rule_disabled=False))
+
 #app = core.App()
 #CdkStackProjectStack(app, "cdk-stack-project")
 #app.synth()
