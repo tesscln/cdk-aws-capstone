@@ -78,29 +78,33 @@ def get_mqtt_topics():
     
     return topics
 
+# Ask the user for region and account ID
+aws_region = input("Enter your AWS region: ")
+aws_account_id = input("Enter your AWS account ID: ")
+
 # Function to collect IoT Core rules information
 def get_rules_info(assets):
     num_rules = int(input("Enter the number of rules (each rule will link data streams from sensors to a specific asset i.e. create one rule/asset): "))
     rules = []
 
-    for _ in range(num_rules):
-        rule_name = input("Enter the rule name (e.g. RuleAsset1): ")
-        mqtt_topic = input("Enter the MQTT message topic name (the one you subscribed to): ")
+    for asset in assets:
+        rule_name = f"Rule{asset['name']}SynchronizingData"
+        mqtt_topic = input(f"Enter the MQTT message topic name for asset '{asset['name']}' (the one you subscribed to): ")
         rule_actions = []
 
-        for asset in assets:
-            for prop in asset['properties']:
-                sensor_data = input(f"Enter the sensor data name for asset '{asset['name']}' property '{prop['name']}': ")
-                rule_actions.append({
-                    "assetName": asset['name'],
-                    "propertyName": prop['name'],
-                    "sensorData": sensor_data,
-                    "mqttTopic": mqtt_topic
-                })
-
+        for prop in asset['properties']:
+            sensor_data = input(f"Enter the snesor data name for asset '{asset['name']}' property '{prop['name']}': ")
+            rule_actions.append({
+                "assetName": asset['name'],
+                "propertyName": prop['name'],
+                "sensorData": sensor_data,
+                "mqttTopic": mqtt_topic
+            })
+        
         rules.append({"ruleName": rule_name, "actions": rule_actions})
-
+    
     return rules
+
 
 if __name__ == "__main__":
     asset_model_name, asset_properties = get_asset_model_info()
@@ -116,6 +120,9 @@ if __name__ == "__main__":
     asset_properties_json = json.dumps(asset_properties)
     assets_json = json.dumps(assets)
 
+
+    sns_topic_arns = {topic: f"arn:aws:sns:{aws_region}:{aws_account_id}:{topic}" for topic in mqtt_topics}
+
     # Print JSON outputs for inspection
     #print("Serialized assetProperties:", asset_properties_json)
     #print("Serialized assets:", assets_json)
@@ -127,6 +134,9 @@ if __name__ == "__main__":
         f'--context \'assets={assets_json}\''
         f'--context \'rules={json.dumps(rules)}\''
         f'--context \'mqttTopics={json.dumps(mqtt_topics)}\''
+        f'--context snsTopicArns="{json.dumps(sns_topic_arns)}" '
+        f'--context awsRegion="{aws_region}" '
+        f'--context awsAccountId="{aws_account_id}"'
     )
 
     print("Deploy command:", deploy_command)

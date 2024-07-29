@@ -3,7 +3,7 @@ import os
 import json
 from aws_cdk import App
 
-from cdk_stack_project.cdk_stack_project_stack import CdkStackProjectStack
+from cdk_stack_project.cdk_stack_project_stack import IotSensorsToDigitalTwinStack
 
 app = App()
 
@@ -13,21 +13,40 @@ app = App()
 asset_model_name = app.node.try_get_context("assetModelName")
 asset_properties = app.node.try_get_context("assetProperties")
 assets = app.node.try_get_context("assets")
+rules = json.loads(app.node.try_get_context('rules'))
+mqtt_topics = json.loads(app.node.try_get_context('mqttTopics'))
+sns_topic_arns = json.loads(app.node.try_get_context('snsTopicArns'))
+aws_region = app.node.try_get_context('awsRegion')
+aws_account_id = app.node.try_get_context('awsAccountId')
 
 # Ensure context variables are parsed correctly
 if isinstance(asset_properties, str):
-    asset_properties = json.loads(asset_properties)
+    try:
+        asset_properties = json.loads(asset_properties)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing assetProperties JSON: {e}")
+        raise
+
 if isinstance(assets, str):
-    assets = json.loads(assets)
+    try:
+        assets = json.loads(assets)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing assets JSON: {e}")
+        raise
 
 print("Asset Model Name:", asset_model_name)
 print("Asset Properties:", asset_properties)
 print("Assets:", assets)
 
-CdkStackProjectStack(app, "CdkStackProjectStack",
+IotSensorsToDigitalTwinStack(app, "IotSensorsToDigitalTwinStack",
                      asset_model_name,
                      asset_properties,
-                     assets
+                     assets,
+                     rules, 
+                     mqtt_topics,
+                     sns_topic_arns,
+                     aws_region,
+                     aws_account_id
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
