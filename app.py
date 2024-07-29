@@ -13,9 +13,9 @@ app = App()
 asset_model_name = app.node.try_get_context("assetModelName")
 asset_properties = app.node.try_get_context("assetProperties")
 assets = app.node.try_get_context("assets")
-rules = json.loads(app.node.try_get_context('rules'))
-mqtt_topics = json.loads(app.node.try_get_context('mqttTopics'))
-sns_topic_arns = json.loads(app.node.try_get_context('snsTopicArns'))
+rules = app.node.try_get_context('rules')
+mqtt_topics = app.node.try_get_context('mqttTopics')
+sns_topic_arns = app.node.try_get_context('snsTopicArns')
 aws_region = app.node.try_get_context('awsRegion')
 aws_account_id = app.node.try_get_context('awsAccountId')
 
@@ -33,6 +33,34 @@ if isinstance(assets, str):
     except json.JSONDecodeError as e:
         print(f"Error parsing assets JSON: {e}")
         raise
+
+if isinstance(rules, str):
+    try:
+        rules = json.loads(rules)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing rules JSON: {e}")
+        raise
+elif rules is None:
+    rules = []
+
+if isinstance(mqtt_topics, str):
+    try:
+        mqtt_topics = json.loads(mqtt_topics)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing mqttTopics JSON: {e}")
+        raise
+elif mqtt_topics is None:
+    mqtt_topics = []
+
+if isinstance(sns_topic_arns, str):
+    try:
+        sns_topic_arns = json.loads(sns_topic_arns)
+    except json.JSONDecodeError as e:
+        print(f"Error parsing snsTopicArns JSON: {e}")
+        raise
+elif sns_topic_arns is None:
+    sns_topic_arns = {}
+
 
 print("Asset Model Name:", asset_model_name)
 print("Asset Properties:", asset_properties)
