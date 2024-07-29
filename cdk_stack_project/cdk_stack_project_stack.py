@@ -148,7 +148,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                 asset_id = asset_ids[asset_name]
                 
                 # Determine data type
-                data_type = next(prop['dataType'] for prop in asset_properties if prop['name'] == property_name)
+                data_type = next(prop.data_type for prop in asset_model_properties if prop.name == property_name)
                 if data_type == "DOUBLE":
                     value = f"$.{sensor_data}"
                 else:
