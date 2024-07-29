@@ -106,7 +106,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                  actions=[
                                      iot.CfnTopicRule.ActionProperty(
                                          sns=iot.CfnTopicRule.SnsActionProperty(
-                                             target_arn=sns_topic_arns[rule['mqttTopic']],
+                                             target_arn=sns_topic_arns[topic],
                                              role_arn=iot_role.role_arn
                                          )
                                      )
