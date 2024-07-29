@@ -100,7 +100,7 @@ def get_rules_info(assets):
         rule_actions = []
 
         for prop in asset['properties']:
-            sensor_data = input(f"Enter the snesor data name for asset '{asset['name']}' property '{prop['name']}': ")
+            sensor_data = input(f"Enter the sensor data name for asset '{asset['name']}' property '{prop['name']}': ")
             rule_actions.append({
                 "assetName": asset['name'],
                 "propertyName": prop['name'],

@@ -1,5 +1,5 @@
 
-# Welcome to your CDK Python project!
+# Version 2 complete version: need to check Rule outcome/ property IDs etc.
 
 This is a blank project for CDK development with Python.
 
