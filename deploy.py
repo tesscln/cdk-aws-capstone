@@ -1,5 +1,6 @@
 import json
 import os
+import shlex
 import uuid  # To generate a logicalId for the asset if the user does not provide one.
 
 # Defining a function collecting user input for asset model and properties
@@ -95,7 +96,7 @@ def get_rules_info(assets):
         while mqtt_topic not in mqtt_topics:
             print(f"Invalid topic name. Please choose from the available topics: {', '.join(mqtt_topics)}")
             mqtt_topic = input(f"Enter the MQTT message topic name for asset '{asset['name']}' (choose from the above list): ")
-            
+
         rule_actions = []
 
         for prop in asset['properties']:
@@ -135,19 +136,24 @@ if __name__ == "__main__":
     sns_topic_arns = {topic: f"arn:aws:sns:{aws_region}:{aws_account_id}:{topic}" for topic in mqtt_topics}
 
     # Print JSON outputs for inspection
-    #print("Serialized assetProperties:", asset_properties_json)
-    #print("Serialized assets:", assets_json)
+    print("Serialized assetProperties:", asset_properties_json)
+    print("Serialized assets:", assets_json)
+    print("Serialized rules:", rules_json)
+    print("Serialized mqttTopics:", mqtt_topics_json)
+    print("Serialized snsTopicArns:", sns_topic_arns_json)
 
-    # Deploy the stack with the collected input
+
+    # Construct deploy command with proper quoting
     deploy_command = (
-        f'cdk deploy --context assetModelName="{asset_model_name}" ' 
-        f'--context \'assetProperties={asset_properties_json}\' ' 
-        f'--context \'assets={assets_json}\''
-        f'--context \'rules={rules_json}\''
-        f'--context \'mqttTopics={mqtt_topics_json}\''
-        f'--context snsTopicArns="{sns_topic_arns_json}" '
-        f'--context awsRegion="{aws_region}" '
-        f'--context awsAccountId="{aws_account_id}"'
+        f'cdk deploy '
+        f'--context assetModelName={shlex.quote(asset_model_name)} '
+        f'--context assetProperties={shlex.quote(asset_properties_json)} '
+        f'--context assets={shlex.quote(assets_json)} '
+        f'--context rules={shlex.quote(rules_json)} '
+        f'--context mqttTopics={shlex.quote(mqtt_topics_json)} '
+        f'--context snsTopicArns={shlex.quote(sns_topic_arns_json)} '
+        f'--context awsRegion={shlex.quote(aws_region)} '
+        f'--context awsAccountId={shlex.quote(aws_account_id)}'
     )
 
     print("Deploy command:", deploy_command)
