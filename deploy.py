@@ -89,7 +89,13 @@ def get_rules_info(assets):
 
     for asset in assets:
         rule_name = f"Rule{asset['name']}SynchronizingData"
-        mqtt_topic = input(f"Enter the MQTT message topic name for asset '{asset['name']}' (the one you subscribed to): ")
+        print("Available MQTT topics:", mqtt_topics)
+        mqtt_topic = input(f"Enter the MQTT message topic name for asset '{asset['name']}' (choose from the above list): ")
+
+        while mqtt_topic not in mqtt_topics:
+            print(f"Invalid topic name. Please choose from the available topics: {', '.join(mqtt_topics)}")
+            mqtt_topic = input(f"Enter the MQTT message topic name for asset '{asset['name']}' (choose from the above list): ")
+            
         rule_actions = []
 
         for prop in asset['properties']:
@@ -119,6 +125,11 @@ if __name__ == "__main__":
     # Serialize to JSON
     asset_properties_json = json.dumps(asset_properties)
     assets_json = json.dumps(assets)
+    rules_json = json.dumps(rules)
+    mqtt_topics_json = json.dumps(mqtt_topics)
+    sns_topic_arns_json = json.dumps({
+        topic: f"arn:aws:sns:{aws_region}:{aws_account_id}:{topic}" for topic in mqtt_topics
+    })
 
 
     sns_topic_arns = {topic: f"arn:aws:sns:{aws_region}:{aws_account_id}:{topic}" for topic in mqtt_topics}
@@ -132,9 +143,9 @@ if __name__ == "__main__":
         f'cdk deploy --context assetModelName="{asset_model_name}" ' 
         f'--context \'assetProperties={asset_properties_json}\' ' 
         f'--context \'assets={assets_json}\''
-        f'--context \'rules={json.dumps(rules)}\''
-        f'--context \'mqttTopics={json.dumps(mqtt_topics)}\''
-        f'--context snsTopicArns="{json.dumps(sns_topic_arns)}" '
+        f'--context \'rules={rules_json}\''
+        f'--context \'mqttTopics={mqtt_topics_json}\''
+        f'--context snsTopicArns="{sns_topic_arns_json}" '
         f'--context awsRegion="{aws_region}" '
         f'--context awsAccountId="{aws_account_id}"'
     )
