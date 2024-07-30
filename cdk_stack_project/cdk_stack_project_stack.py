@@ -82,8 +82,12 @@ class IotSensorsToDigitalTwinStack(Stack):
                               asset_properties=asset_properties)
             
             asset_ids[asset['name']] = asset_resource.ref
-            property_ids[asset['name']] = {prop['name']: prop['logicalId'] for prop in asset['properties']}
-
+            
+            # Store property IDs
+            property_ids[asset['name']] = {
+                prop['name']: asset_model_properties[idx].logical_id
+                for idx, prop in enumerate(asset['properties'])
+            }
         
         # Create an IAM role for IoT rule actions
 
@@ -150,9 +154,9 @@ class IotSensorsToDigitalTwinStack(Stack):
                 # Determine data type
                 data_type = next(prop.data_type for prop in asset_model_properties if prop.name == property_name)
                 if data_type == "DOUBLE":
-                    value = f"$.{sensor_data}"
+                    value = f"${{{sensor_data}}}"
                 else:
-                    value = f"$.{sensor_data}"
+                    value = f"${{{sensor_data}}}"
                 
                 # Create action
                 actions.append(
@@ -171,7 +175,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                                 integer_value=value if data_type == "INTEGER" else None
                                             ),
                                             timestamp=iot.CfnTopicRule.AssetPropertyTimestampProperty(
-                                                time_in_seconds="$.timeInSeconds"
+                                                time_in_seconds="${floor(timestamp() / 1E3)}"
                                             ),
                                             quality="GOOD"
                                         )
