@@ -7,6 +7,7 @@ from aws_cdk import (
     aws_sns as sns,
     aws_sns_subscriptions as subscriptions
 )
+
 from constructs import Construct
 import json
 
@@ -61,8 +62,8 @@ class IotSensorsToDigitalTwinStack(Stack):
             if not isinstance(asset.get('properties'), list) or not all(isinstance(prop, dict) for prop in asset['properties']):
                 raise ValueError("Each asset's properties must be a list of dictionaries")
         
-        asset_ids = {}  # Store both the asset IDs and property IDs for Rule creation in IoT Core.
-        property_ids = {}
+        asset_ids = {}  # Store both the asset IDs and property aliases for Rule creation in IoT Core.
+        property_aliases = {}
 
         
         # Create an IoT SiteWise asset belonging to the created asset model
@@ -72,7 +73,8 @@ class IotSensorsToDigitalTwinStack(Stack):
                 sitewise.CfnAsset.AssetPropertyProperty(
                     logical_id=prop.get('logicalId', ""),
                     notification_state=prop.get('notification_state', "ENABLED"),
-                    unit=prop.get('unit', "")
+                    unit=prop.get('unit', ""),
+                    alias=f"/{asset['name']}/{prop['name']}"
                 ) for prop in asset['properties']
             ]
     
@@ -82,11 +84,12 @@ class IotSensorsToDigitalTwinStack(Stack):
                               asset_properties=asset_properties)
             
             asset_ids[asset['name']] = asset_resource.ref
-            
-            # Store property IDs
-            property_ids[asset['name']] = {
-                prop['name']: asset_model_properties[idx].logical_id
-                for idx, prop in enumerate(asset['properties'])
+
+            # Store the property aliases 
+
+            property_aliases[asset['name']] = {
+                prop['name']: f"/{asset['name']}/{prop['name']}"
+                for prop in asset['properties']
             }
         
         # Create an IAM role for IoT rule actions
@@ -148,7 +151,7 @@ class IotSensorsToDigitalTwinStack(Stack):
             for action in rule['actions']:
                 property_name = action['propertyName']
                 sensor_data = action['sensorData']
-                property_id = property_ids[asset_name].get(property_name)
+                property_alias = property_aliases[asset_name].get(property_name)
                 asset_id = asset_ids[asset_name]
                 
                 # Determine data type
@@ -166,8 +169,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                             put_asset_property_value_entries=[
                                 iot.CfnTopicRule.PutAssetPropertyValueEntryProperty(
                                     entry_id=f"{asset_name}-{property_name}",
-                                    asset_id=asset_id,
-                                    property_id=property_id,
+                                    property_alias=property_alias,
                                     property_values=[
                                         iot.CfnTopicRule.AssetPropertyValueProperty(
                                             value=iot.CfnTopicRule.AssetPropertyVariantProperty(
@@ -197,8 +199,8 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         for asset_name, asset_id in asset_ids.items():
             CfnOutput(self, f"{asset_name}AssetId", value=asset_id)
-            for prop_name, prop_id in property_ids[asset_name].items():
-                CfnOutput(self, f"{asset_name}{prop_name}PropertyId", value=prop_id)
+            for prop_name, prop_alias in property_aliases[asset_name].items():
+                CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
         
 
 #app = core.App()
