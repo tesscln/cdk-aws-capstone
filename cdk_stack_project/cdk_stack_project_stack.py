@@ -95,10 +95,114 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Create an IAM role for IoT rule actions
 
         iot_role = iam.Role(self, "IoTRole",
-                            assumed_by=iam.ServicePrincipal("iot.amazonaws.com"),
-                            managed_policies=[
-                                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSIoTRuleActions")
-                            ])
+                            assumed_by=iam.ServicePrincipal("iot.amazonaws.com"))
+
+        # Attach managed policies to the role
+        iot_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSIoTRuleActions"))
+
+        # Attach custom inline policy
+        iot_role.attach_inline_policy(
+            iam.Policy(self, "CustomIoTPolicy",
+                       statements=[
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "s3:Get*",
+                                   "s3:List*",
+                                   "s3:Describe*",
+                                   "s3-object-lambda:Get*",
+                                   "s3-object-lambda:List*"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "logs:CreateLogGroup",
+                                   "logs:CreateLogStream",
+                                   "logs:PutLogEvents",
+                                   "logs:PutMetricFilter",
+                                   "logs:PutRetentionPolicy",
+                                   "logs:GetLogEvents",
+                                   "logs:DeleteLogStream"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "dynamodb:PutItem",
+                                   "kinesis:PutRecord",
+                                   "iot:Publish",
+                                   "s3:PutObject",
+                                   "sns:Publish",
+                                   "sqs:SendMessage*",
+                                   "cloudwatch:SetAlarmState",
+                                   "cloudwatch:PutMetricData",
+                                   "es:ESHttpPut",
+                                   "firehose:PutRecord"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "iotsitewise:*"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "iot:AddThingToThingGroup",
+                                   "iot:AttachPolicy",
+                                   "iot:AttachPrincipalPolicy",
+                                   "iot:AttachThingPrincipal",
+                                   "iot:CreateCertificateFromCsr",
+                                   "iot:CreatePolicy",
+                                   "iot:CreateThing",
+                                   "iot:DescribeCertificate",
+                                   "iot:DescribeThing",
+                                   "iot:DescribeThingGroup",
+                                   "iot:DescribeThingType",
+                                   "iot:DetachPolicy",
+                                   "iot:DetachThingPrincipal",
+                                   "iot:GetPolicy",
+                                   "iot:ListAttachedPolicies",
+                                   "iot:ListPolicyPrincipals",
+                                   "iot:ListPrincipalPolicies",
+                                   "iot:ListPrincipalThings",
+                                   "iot:ListTargetsForPolicy",
+                                   "iot:ListThingGroupsForThing",
+                                   "iot:ListThingPrincipals",
+                                   "iot:RegisterCertificate",
+                                   "iot:RegisterThing",
+                                   "iot:RemoveThingFromThingGroup",
+                                   "iot:UpdateCertificate",
+                                   "iot:UpdateThing",
+                                   "iot:UpdateThingGroupsForThing",
+                                   "iot:AddThingToBillingGroup",
+                                   "iot:DescribeBillingGroup",
+                                   "iot:RemoveThingFromBillingGroup"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "iotsitewise:BatchPutAssetPropertyValue",
+                                   "iotanalytics:BatchPutMessage",
+                                   "iotevents:BatchPutMessage"
+                               ],
+                               resources=["*"]
+                           ),
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=["iot:Publish"],
+                               resources=["arn:aws:iot:us-east-1:339713069268:topic/wheel-speed-error-action"]
+                           )
+                       ])
+        )
             
         print("Rules Input:", rules)
 
