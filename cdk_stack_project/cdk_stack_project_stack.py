@@ -102,6 +102,13 @@ class IotSensorsToDigitalTwinStack(Stack):
             
         print("Rules Input:", rules)
 
+         # Create SNS topics and subscriptions
+
+        for topic in mqtt_topics:
+            if topic not in sns_topic_arns:
+                sns_topic = sns.Topic(self, f"{topic}Topic")
+                sns_topic_arns[topic] = sns_topic.topic_arn
+
         # Create MQTT topic subscriptions
 
         #existing_sns_topic_arn = f"arn:aws:sns:{aws_region}:{aws_account_id}:{sns_topic_name}"
