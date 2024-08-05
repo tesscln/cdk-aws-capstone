@@ -5,7 +5,12 @@ from aws_cdk import (
     aws_iam as iam,
     CfnOutput,
     aws_sns as sns,
-    aws_sns_subscriptions as subscriptions
+    aws_sns_subscriptions as subscriptions,
+    aws_iottwinmaker as iottwinmaker,
+    aws_s3 as s3,
+    RemovalPolicy,
+    aws_lambda as _lambda,
+    custom_resources as cr
 )
 
 from constructs import Construct
@@ -29,6 +34,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         print("Rules Input:", rules)
         print("MQTT topics:", mqtt_topics)
         print("SNS Topic ARNs:", sns_topic_arns)
+        
 
         if not isinstance(asset_properties, list) or not all(isinstance(prop, dict) for prop in asset_properties):
             raise ValueError("asset_properties must be a list of dictionaries")
@@ -64,7 +70,6 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         asset_ids = {}  # Store both the asset IDs and property aliases for Rule creation in IoT Core.
         property_aliases = {}
-
         
         # Create an IoT SiteWise asset belonging to the created asset model
 
@@ -306,13 +311,21 @@ class IotSensorsToDigitalTwinStack(Stack):
                                  rule_disabled=False
                              ))
             
+        # Create a workspace in IoT TwinMaker
+
+        workspace_name = f"{asset_model_name}-workspace"
+        workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
+                                               workspace_name=workspace_name)
+        
+            
         # Output asset and property IDs to verify them
 
         for asset_name, asset_id in asset_ids.items():
             CfnOutput(self, f"{asset_name}AssetId", value=asset_id)
             for prop_name, prop_alias in property_aliases[asset_name].items():
                 CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
-        
+
+        CfnOutput(self, "WorkspaceId", value=workspace.attr_workspace_id)
 
 #app = core.App()
 #CdkStackProjectStack(app, "cdk-stack-project")
