@@ -348,7 +348,7 @@ class IotSensorsToDigitalTwinStack(Stack):
             for prop_name, prop_alias in property_aliases[asset_name].items():
                 CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
 
-        CfnOutput(self, "WorkspaceId", value=workspace.attr_workspace_id)
+        CfnOutput(self, "WorkspaceId", value=workspace.workspace_id)
 
 #app = core.App()
 #CdkStackProjectStack(app, "cdk-stack-project")
