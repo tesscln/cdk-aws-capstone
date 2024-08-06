@@ -72,7 +72,9 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         # Create an S3 bucket for IoT TwinMaker workspace
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
-                                     removal_policy=s3.RemovalPolicy.DESTROY)
+                                     removal_policy=RemovalPolicy.DESTROY)
+
+        # Create IoT SiteWise assets
         
         # Create an IoT SiteWise asset belonging to the created asset model
 
