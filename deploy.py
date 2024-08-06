@@ -126,7 +126,6 @@ if __name__ == "__main__":
     os.environ['BUCKET_NAME'] = bucket_name
     os.environ['AWS_REGION'] = aws_region
 
-    os.system(f'python upload_script.py')
 
     # Serialize to JSON
     asset_properties_json = json.dumps(asset_properties)

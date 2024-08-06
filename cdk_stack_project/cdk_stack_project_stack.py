@@ -6,7 +6,10 @@ from aws_cdk import (
     CfnOutput,
     aws_sns as sns,
     aws_sns_subscriptions as subscriptions,
-    aws_iottwinmaker as iottwinmaker
+    aws_iottwinmaker as iottwinmaker,
+    aws_s3 as s3,
+    RemovalPolicy,
+    custom_resources as cr
 )
 
 from constructs import Construct
@@ -66,6 +69,10 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         asset_ids = {}  # Store both the asset IDs and property aliases for Rule creation in IoT Core.
         property_aliases = {}
+        
+        # Create an S3 bucket for IoT TwinMaker workspace
+        twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
+                                     removal_policy=s3.RemovalPolicy.DESTROY)
         
         # Create an IoT SiteWise asset belonging to the created asset model
 
@@ -201,6 +208,22 @@ class IotSensorsToDigitalTwinStack(Stack):
                                effect=iam.Effect.ALLOW,
                                actions=["iot:Publish"],
                                resources=["arn:aws:iot:us-east-1:339713069268:topic/wheel-speed-error-action"]
+                           ),
+
+                           # Permissions for IoT TwinMaker
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "iottwinmaker:CreateWorkspace",
+                                   "iottwinmaker:DeleteWorkspace",
+                                   "iottwinmaker:GetWorkspace",
+                                   "iottwinmaker:ListWorkspaces",
+                                   "iottwinmaker:UpdateWorkspace",
+                                   "iottwinmaker:TagResource",
+                                   "iottwinmaker:UntagResource",
+                                   "iottwinmaker:ListTagsForResource"
+                               ],
+                               resources=["*"]
                            )
                        ])
         )
@@ -311,6 +334,8 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         workspace_name = f"{asset_model_name}-workspace"
         workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
+                                              role=iot_role.role_arn,
+                                              s3_location=twinmaker_bucket.bucket_arn,
                                                workspace_id=workspace_name)
         
             
