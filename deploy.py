@@ -109,7 +109,7 @@ def get_rules_info(assets):
             })
         
         rules.append({"ruleName": rule_name, "actions": rule_actions})
-    
+
     return rules
 
 if __name__ == "__main__":
@@ -121,6 +121,12 @@ if __name__ == "__main__":
     print("MQTT Topics:", mqtt_topics)
     rules = get_rules_info(assets)
     print("Rules Info:", rules)
+
+    bucket_name = f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket"
+    os.environ['BUCKET_NAME'] = bucket_name
+    os.environ['AWS_REGION'] = aws_region
+
+    os.system(f'python upload_script.py')
 
     # Serialize to JSON
     asset_properties_json = json.dumps(asset_properties)
