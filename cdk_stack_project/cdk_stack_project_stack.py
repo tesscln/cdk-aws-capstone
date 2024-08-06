@@ -237,6 +237,11 @@ class IotSensorsToDigitalTwinStack(Stack):
                            )
                        ])
         )
+
+        # Correct trust policy setup for TwinMaker
+        twinmaker_role = iam.Role(self, "TwinMakerRole",
+            assumed_by=iam.ServicePrincipal("iottwinmaker.amazonaws.com")
+        )
             
         print("Rules Input:", rules)
 
@@ -344,7 +349,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         workspace_name = f"{asset_model_name}-workspace"
         workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
-                                              role=iot_role.role_arn,
+                                              role=twinmaker_role.role_arn,
                                               s3_location=twinmaker_bucket.bucket_arn,
                                                workspace_id=workspace_name)
         
