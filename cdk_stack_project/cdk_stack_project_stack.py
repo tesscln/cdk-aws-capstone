@@ -106,6 +106,15 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         iot_role = iam.Role(self, "IoTRole",
                             assumed_by=iam.ServicePrincipal("iot.amazonaws.com"))
+        
+        # Add trust relationship for TwinMaker if needed
+        iot_role.add_to_principal_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["sts:AssumeRole"],
+                principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
+            )
+        )
 
         # Attach managed policies to the role
         iot_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSIoTRuleActions"))
@@ -211,7 +220,6 @@ class IotSensorsToDigitalTwinStack(Stack):
                                actions=["iot:Publish"],
                                resources=["arn:aws:iot:us-east-1:339713069268:topic/wheel-speed-error-action"]
                            ),
-
                            # Permissions for IoT TwinMaker
                            iam.PolicyStatement(
                                effect=iam.Effect.ALLOW,
