@@ -6,11 +6,7 @@ from aws_cdk import (
     CfnOutput,
     aws_sns as sns,
     aws_sns_subscriptions as subscriptions,
-    aws_iottwinmaker as iottwinmaker,
-    aws_s3 as s3,
-    RemovalPolicy,
-    aws_lambda as _lambda,
-    custom_resources as cr
+    aws_iottwinmaker as iottwinmaker
 )
 
 from constructs import Construct
@@ -315,7 +311,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         workspace_name = f"{asset_model_name}-workspace"
         workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
-                                               workspace_name=workspace_name)
+                                               workspace_id=workspace_name)
         
             
         # Output asset and property IDs to verify them

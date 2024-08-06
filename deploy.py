@@ -1,10 +1,7 @@
 import json
 import os
 import shlex
-import boto3 # type: ignore
-import sys
 import uuid  # To generate a logicalId for the asset if the user does not provide one.
-from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
 
 # Defining a function collecting user input for asset model and properties
 
@@ -71,30 +68,6 @@ def get_assets_info(properties):
     
     return assets
 
-def create_bucket(bucket_name, region=None):
-    s3_client = boto3.client('s3', region_name=region)
-    try:
-        if region is None or region == 'us-east-1':
-            s3_client.create_bucket(Bucket=bucket_name)
-        else:
-            s3_client.create_bucket(Bucket=bucket_name, CreateBucketConfiguration={'LocationConstraint': region})
-        print(f"Bucket {bucket_name} created successfully in {region}.")
-    except ClientError as e:
-        print(f"Error creating bucket: {e}")
-        return False
-    return True
-
-def upload_file_to_s3(file_path, bucket_name):
-    s3_client = boto3.client('s3')
-    try:
-        s3_client.upload_file(file_path, bucket_name, os.path.basename(file_path))
-        print(f"File {file_path} uploaded successfully to {bucket_name}.")
-    except Exception as e:
-        print(f"Failed to upload file: {str(e)}")
-        return False
-    return True
-
-
 # Function to collect MQTT topic subscription information
 def get_mqtt_topics():
     num_topics = int(input("Enter the number of MQTT topics to subscribe to: "))
@@ -139,17 +112,6 @@ def get_rules_info(assets):
     
     return rules
 
-def main():
-    asset_model_name, asset_properties = get_asset_model_info()
-    file_path = input("Enter the file path to upload: ")
-    bucket_name = f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket"
-
-    if create_bucket(bucket_name, aws_region):
-        if os.path.isfile(file_path):
-            upload_file_to_s3(file_path, bucket_name)
-        else:
-            print("The file path provided does not exist.")
-
 if __name__ == "__main__":
     asset_model_name, asset_properties = get_asset_model_info()
     print("Asset Model Info:", asset_model_name, asset_properties)
@@ -179,7 +141,6 @@ if __name__ == "__main__":
     #print("Serialized mqttTopics:", mqtt_topics_json)
     #print("Serialized snsTopicArns:", sns_topic_arns_json)
 
-
     # Construct deploy command with proper quoting
     deploy_command = (
         f'cdk deploy '
@@ -196,5 +157,3 @@ if __name__ == "__main__":
     print("Deploy command:", deploy_command)
 
     os.system(deploy_command)
-
-    main()
