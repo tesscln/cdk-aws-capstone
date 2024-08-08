@@ -38,6 +38,8 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Create an IAM role for TwinMaker with S3 access
         twinmaker_role = iam.Role(self, "TwinMakerRole",
                                   assumed_by=iam.ServicePrincipal("iottwinmaker.amazonaws.com"))
+        
+        twinmaker_bucket.grant_read_write(twinmaker_role)
 
         # Grant necessary permissions to the TwinMaker role
         twinmaker_role.add_to_policy(iam.PolicyStatement(
@@ -52,7 +54,25 @@ class IotSensorsToDigitalTwinStack(Stack):
             ]
         ))
 
-        twinmaker_bucket.grant_read_write(twinmaker_role)
+        twinmaker_role.attach_inline_policy(
+            iam.Policy(self, "TwinMakerPolicy",
+                       statements=[
+                           iam.PolicyStatement(
+                               effect=iam.Effect.ALLOW,
+                               actions=[
+                                   "iottwinmaker:CreateWorkspace",
+                                   "iottwinmaker:DeleteWorkspace",
+                                   "iottwinmaker:GetWorkspace",
+                                   "iottwinmaker:ListWorkspaces",
+                                   "iottwinmaker:UpdateWorkspace",
+                                   "iottwinmaker:TagResource",
+                                   "iottwinmaker:UntagResource",
+                                   "iottwinmaker:ListTagsForResource"
+                                ],
+                                resources=["*"]  # Specify resources if possible
+                            )
+                        ])
+        )
 
 
         # Retrieve context variables
