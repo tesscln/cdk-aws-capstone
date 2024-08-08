@@ -2,20 +2,6 @@ import os
 import boto3 # type: ignore
 from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
 
-def create_s3_bucket(bucket_name, region):
-    try:
-        s3_client = boto3.client('s3', region_name=region)
-        s3_client.create_bucket(
-            Bucket=bucket_name,
-            CreateBucketConfiguration={'LocationConstraint': region}
-        )
-        print(f"Bucket '{bucket_name}' created successfully in region '{region}'.")
-    except ClientError as e:
-        print(f"Failed to create bucket '{bucket_name}'. Error: {e}")
-        return False
-    return True
-
-
 def upload_file_to_s3(file_path, bucket_name, region):
     s3_client = boto3.client('s3', region_name=region)
     try:
@@ -25,21 +11,21 @@ def upload_file_to_s3(file_path, bucket_name, region):
         print(f"Failed to upload file: {str(e)}")
 
 
-def main():
+if __name__ == "__main__":
+    
     # Ask user for the file path
     file_path = input("Enter the file path to upload the 3D object (it needs to be in .usd format): ")
 
-    # Ask user for the bucket name
-    bucket_name = os.environ.get('BUCKET_NAME')
+    # Ensure the file path is valid
+    if not os.path.isfile(file_path):
+        print("Invalid file path. Please ensure the file exists.")
+        exit(1)
 
-    # Ask user for the AWS region
-    aws_region = os.environ.get('AWS_REGION')
+    # The bucket name should match the one created by the CDK
+    bucket_name = input("Enter the bucket name (as shown in CDK deployment output): ")
 
-    # Create the S3 bucket
-    if create_s3_bucket(bucket_name, aws_region):
-        # Upload the file
-        upload_file_to_s3(file_path, bucket_name)
+    # The AWS region should match your CDK deployment region
+    aws_region = input("Enter your AWS region (should match the CDK deployment region): ")
 
-
-if __name__ == "__main__":
-    main()
+    # Upload the file
+    upload_file_to_s3(file_path, bucket_name, aws_region)
