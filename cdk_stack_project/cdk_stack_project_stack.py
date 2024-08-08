@@ -62,6 +62,21 @@ class IotSensorsToDigitalTwinStack(Stack):
             principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
         ))
 
+        # # Attach additional permissions specific to IoT TwinMaker
+        # twinmaker_role.add_to_policy(iam.PolicyStatement(
+        #     actions=[
+        #         "iottwinmaker:CreateWorkspace",
+        #         "iottwinmaker:DeleteWorkspace",
+        #         "iottwinmaker:GetWorkspace",
+        #         "iottwinmaker:ListWorkspaces",
+        #         "iottwinmaker:UpdateWorkspace",
+        #         "iottwinmaker:TagResource",
+        #         "iottwinmaker:UntagResource",
+        #         "iottwinmaker:ListTagsForResource"
+        #     ],
+        #     resources=["*"]  # Ideally, specify exact resources if possible
+        # ))
+
         twinmaker_role.attach_inline_policy(
             iam.Policy(self, "TwinMakerPolicy",
                        statements=[
