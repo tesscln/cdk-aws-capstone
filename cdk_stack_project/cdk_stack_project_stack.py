@@ -52,6 +52,8 @@ class IotSensorsToDigitalTwinStack(Stack):
             ]
         ))
 
+        twinmaker_bucket.grant_read_write(twinmaker_role)
+
 
         # Retrieve context variables
        # asset_model_name = self.node.try_get_context('assetModelName')
@@ -270,6 +272,8 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         # Grant the IoT role read/write permissions to the bucket
         bucket.grant_read_write(iot_role)
+
+        twinmaker_bucket.grant_read_write(iot_role)
             
         print("Rules Input:", rules)
 
