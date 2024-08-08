@@ -34,7 +34,6 @@ class IotSensorsToDigitalTwinStack(Stack):
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
                                      removal_policy=RemovalPolicy.DESTROY)
 
-        twinmaker_bucket.grant_read_write(twinmaker_role)
         
         CfnOutput(self, "TwinMakerBucketName", value=twinmaker_bucket.bucket_name)
 
@@ -76,6 +75,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                         ])
         )
 
+        twinmaker_bucket.grant_read_write(twinmaker_role)
 
         # Retrieve context variables
        # asset_model_name = self.node.try_get_context('assetModelName')
