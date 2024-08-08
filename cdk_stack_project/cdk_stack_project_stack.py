@@ -26,20 +26,22 @@ class IotSensorsToDigitalTwinStack(Stack):
         bucket = s3.Bucket(self, "AssetModelBucket",
                            bucket_name=f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket",
                            removal_policy=RemovalPolicy.DESTROY)
-        
+
+        # Output the bucket name to use it later
+        CfnOutput(self, "BucketName", value=bucket.bucket_name)
+
         # Create an S3 bucket for IoT TwinMaker workspace
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
                                      removal_policy=RemovalPolicy.DESTROY)
 
-        # Output the bucket name to use it later
-        CfnOutput(self, "BucketName", value=bucket.bucket_name)
+        twinmaker_bucket.grant_read_write(twinmaker_role)
+        
         CfnOutput(self, "TwinMakerBucketName", value=twinmaker_bucket.bucket_name)
 
         # Create an IAM role for TwinMaker with S3 access
         twinmaker_role = iam.Role(self, "TwinMakerRole",
                                   assumed_by=iam.ServicePrincipal("iottwinmaker.amazonaws.com"))
         
-        twinmaker_bucket.grant_read_write(twinmaker_role)
 
         # Grant necessary permissions to the TwinMaker role
         twinmaker_role.add_to_policy(iam.PolicyStatement(
