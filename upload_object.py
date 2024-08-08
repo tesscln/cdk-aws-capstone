@@ -35,3 +35,5 @@ if __name__ == "__main__":
 
     # Upload the file
     upload_file_to_s3(file_path, bucket_name, aws_region)
+
+
