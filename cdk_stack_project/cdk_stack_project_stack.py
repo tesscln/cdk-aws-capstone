@@ -116,17 +116,17 @@ class IotSensorsToDigitalTwinStack(Stack):
         iot_role = iam.Role(self, "IoTRole",
                             assumed_by=iam.ServicePrincipal("iot.amazonaws.com"))
         
-        # Add trust relationship for TwinMaker if needed
-        iot_role.add_to_principal_policy(
-            iam.PolicyStatement(
-                effect=iam.Effect.ALLOW,
-                actions=["sts:AssumeRole"],
-                principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
-            )
-        )
-
         # Attach managed policies to the role
         iot_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSIoTRuleActions"))
+
+        # Add trust relationship for TwinMaker if needed
+        # iot_role.add_to_principal_policy(
+        #     iam.PolicyStatement(
+        #         effect=iam.Effect.ALLOW,
+        #         actions=["sts:AssumeRole"],
+        #         principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
+        #     )
+        # )
 
         # Attach custom inline policy
         iot_role.attach_inline_policy(
@@ -139,9 +139,10 @@ class IotSensorsToDigitalTwinStack(Stack):
                                    "s3:List*",
                                    "s3:Describe*",
                                    "s3-object-lambda:Get*",
-                                   "s3-object-lambda:List*"
+                                   "s3-object-lambda:List*",
+                                   "s3:PutObject"
                                ],
-                               resources=["*"]
+                               resources=[bucket.bucket_arn, f"{bucket.bucket_arn}/*"]
                            ),
                            iam.PolicyStatement(
                                effect=iam.Effect.ALLOW,
