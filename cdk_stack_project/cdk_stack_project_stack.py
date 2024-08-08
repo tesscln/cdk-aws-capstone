@@ -9,7 +9,9 @@ from aws_cdk import (
     aws_iottwinmaker as iottwinmaker,
     aws_s3 as s3,
     RemovalPolicy,
-    custom_resources as cr
+    custom_resources as cr,
+    aws_lambda as _lambda,
+    aws_s3_notifications as s3n
 )
 
 from constructs import Construct
@@ -29,6 +31,25 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         # Output the bucket name to use it later
         CfnOutput(self, "BucketName", value=bucket.bucket_name)
+
+        # Define a Lambda function
+        lambda_function = _lambda.Function(self, "UsdToGltfConverter",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            handler="lambda_function.lambda_handler",
+            code=_lambda.Code.from_asset("lambda"),  # Path to your Lambda code directory
+            environment={
+                'BUCKET_NAME': bucket.bucket_name
+            }
+        )
+
+        # Grant the Lambda function permissions to read/write to the S3 bucket
+        bucket.grant_read_write(lambda_function)
+
+        # Add S3 event notification to trigger the Lambda function
+        notification = s3n.LambdaDestination(lambda_function)
+        bucket.add_event_notification(s3.EventType.OBJECT_CREATED, notification, s3.NotificationKeyFilter(suffix=".usd"))
+
+
 
         # Create an S3 bucket for IoT TwinMaker workspace
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
