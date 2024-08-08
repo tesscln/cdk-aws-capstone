@@ -25,7 +25,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Create an S3 bucket
         bucket = s3.Bucket(self, "AssetModelBucket",
                            bucket_name=f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket",
-                           removal_policy=s3.RemovalPolicy.DESTROY)
+                           removal_policy=RemovalPolicy.DESTROY)
 
         # Output the bucket name to use it later
         CfnOutput(self, "BucketName", value=bucket.bucket_name)
