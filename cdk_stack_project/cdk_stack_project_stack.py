@@ -55,6 +55,13 @@ class IotSensorsToDigitalTwinStack(Stack):
             ]
         ))
 
+        twinmaker_bucket.add_to_resource_policy(iam.PolicyStatement(
+            effect=iam.Effect.ALLOW,
+            actions=["s3:GetObject", "s3:PutObject"],
+            resources=[f"{twinmaker_bucket.bucket_arn}/*"],
+            principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
+        ))
+
         twinmaker_role.attach_inline_policy(
             iam.Policy(self, "TwinMakerPolicy",
                        statements=[
@@ -295,7 +302,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Grant the IoT role read/write permissions to the bucket
         bucket.grant_read_write(iot_role)
 
-        twinmaker_bucket.grant_read_write(iot_role)
+       #twinmaker_bucket.grant_read_write(iot_role)
             
         print("Rules Input:", rules)
 
