@@ -41,19 +41,22 @@ class IotSensorsToDigitalTwinStack(Stack):
         twinmaker_role = iam.Role(self, "TwinMakerRole",
                                   assumed_by=iam.ServicePrincipal("iottwinmaker.amazonaws.com"))
         
-
-        # Grant necessary permissions to the TwinMaker role
-        twinmaker_role.add_to_policy(iam.PolicyStatement(
-            actions=[
-                "s3:ListBucket",
-                "s3:GetObject",
-                "s3:PutObject",
-            ],
-            resources=[
-                twinmaker_bucket.bucket_arn,
-                f"{twinmaker_bucket.bucket_arn}/*"
-            ]
-        ))
+        twinmaker_role.add_managed_policy(
+            iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
+        )
+        
+        # # Grant necessary permissions to the TwinMaker role
+        # twinmaker_role.add_to_policy(iam.PolicyStatement(
+        #     actions=[
+        #         "s3:ListBucket",
+        #         "s3:GetObject",
+        #         "s3:PutObject",
+        #     ],
+        #     resources=[
+        #         twinmaker_bucket.bucket_arn,
+        #         f"{twinmaker_bucket.bucket_arn}/*"
+        #     ]
+        # ))
 
         twinmaker_bucket.add_to_resource_policy(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
