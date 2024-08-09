@@ -36,7 +36,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Define a Lambda function
         lambda_function = _lambda.Function(self, "UsdToGltfConverter",
             runtime=_lambda.Runtime.PYTHON_3_8,
-            handler="lambda_function.lambda_handler",
+            handler="lambda_conversion.lambda_handler",
             code=_lambda.Code.from_asset("lambda"),  # Path to your Lambda code directory
             timeout=Duration.minutes(5),
             memory_size=1024,
