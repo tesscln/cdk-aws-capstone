@@ -11,7 +11,8 @@ from aws_cdk import (
     RemovalPolicy,
     custom_resources as cr,
     aws_lambda as _lambda,
-    aws_s3_notifications as s3n
+    aws_s3_notifications as s3_notifications,
+    Duration
 )
 
 from constructs import Construct
@@ -37,6 +38,8 @@ class IotSensorsToDigitalTwinStack(Stack):
             runtime=_lambda.Runtime.PYTHON_3_8,
             handler="lambda_function.lambda_handler",
             code=_lambda.Code.from_asset("lambda"),  # Path to your Lambda code directory
+            timeout=Duration.minutes(5),
+            memory_size=1024,
             environment={
                 'BUCKET_NAME': bucket.bucket_name
             }
@@ -45,11 +48,18 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Grant the Lambda function permissions to read/write to the S3 bucket
         bucket.grant_read_write(lambda_function)
 
-        # Add S3 event notification to trigger the Lambda function
-        notification = s3n.LambdaDestination(lambda_function)
-        bucket.add_event_notification(s3.EventType.OBJECT_CREATED, notification, s3.NotificationKeyFilter(suffix=".usd"))
+        bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3_notifications.LambdaDestination(lambda_function),
+            s3.NotificationKeyFilter(suffix='.usd')
+        )
 
-
+        lambda_function.add_to_role_policy(
+            iam.PolicyStatement(
+                actions=["s3:GetObject", "s3:PutObject"],
+                resources=[bucket.bucket_arn, f"{bucket.bucket_arn}/*"]
+            )
+        )
 
         # Create an S3 bucket for IoT TwinMaker workspace
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
