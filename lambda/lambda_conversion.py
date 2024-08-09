@@ -36,5 +36,10 @@ def lambda_handler(event, context):
 
 def convert_usd_to_gltf(input_usd, output_gltf):
     # Use a subprocess call to run Blender CLI
-    command = f"blender --background --python-expr \"import bpy; bpy.ops.wm.read_factory_settings(use_empty=True); bpy.ops.wm.usd_import(filepath='{input_usd}'); bpy.ops.export_scene.gltf(filepath='{output_gltf}', export_format='GLTF')\""
+    command = (
+        f"blender --background --python-expr \"import bpy; "
+        f"bpy.ops.wm.read_factory_settings(use_empty=True); "
+        f"bpy.ops.wm.usd_import(filepath='{input_usd}'); "
+        f"bpy.ops.export_scene.gltf(filepath='{output_gltf}', export_format='GLTF')\""
+    )
     subprocess.run(command, shell=True, check=True)
