@@ -12,7 +12,10 @@ from aws_cdk import (
     custom_resources as cr,
     aws_lambda as _lambda,
     aws_s3_notifications as s3_notifications,
-    Duration
+    Duration,
+    aws_ec2 as ec2,
+    aws_sqs as sqs,
+    aws_lambda_event_sources as lambda_event_sources
 )
 
 from constructs import Construct
@@ -31,7 +34,70 @@ class IotSensorsToDigitalTwinStack(Stack):
                            removal_policy=RemovalPolicy.DESTROY)
 
         # Output the bucket name to use it later
-        CfnOutput(self, "BucketName", value=bucket.bucket_name)
+        CfnOutput(self, "BucketName", value=bucket.bucket_name, export_name="MyBucketName")
+        
+        #bucket_output = self.node.try_get_context("BucketName")
+        #bucket_output.add_override("value", bucket.bucket_name)
+        
+        queue = sqs.Queue(self, "UsdUploadQueue")
+        
+        bucket.add_event_notification(
+            s3.EventType.OBJECT_CREATED,
+            s3_notifications.SqsDestination(queue),
+            s3.NotificationKeyFilter(suffix=".usd")
+        )
+        
+        lambda_role = iam.Role(self, "LambdaEC2StartRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
+            ])
+        
+        start_ec2_function = _lambda.Function(self, "StartEC2Function",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            handler="lambda_conversion.lambda_handler",
+            code=_lambda.Code.from_asset("lambda"),
+            environment={
+                "QUEUE_URL": queue.queue_url,
+                "BUCKET_NAME": self.bucket_name,
+                "AWS_REGION": self.region
+            },
+            role=lambda_role,
+        )
+        
+        start_ec2_function.add_event_source(lambda_event_sources.SqsEventSource(queue))
+
+        ec2_role = iam.Role(self, "EC2Role",
+                            assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
+                            managed_policies=[
+                                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
+                                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess")
+                            ])
+        
+        ec2_security_group = ec2.SecurityGroup(self, "SecurityGroup",
+                                           vpc=ec2.Vpc.from_lookup(self, "DefaultVPC", is_default=True))
+        
+        ec2_instance = ec2.Instance(self, "ConversionInstance",
+                                instance_type=ec2.InstanceType("t3.micro"),
+                                machine_image=ec2.MachineImage.latest_amazon_linux(),
+                                vpc=ec2_security_group.vpc,
+                                role=ec2_role,
+                                security_group=ec2_security_group,
+                                user_data=ec2.UserData.for_linux())
+        
+        ec2_instance.user_data.add_commands(
+            "yum update -y",
+            "yum install -y blender python3-pip",
+            "pip3 install boto3",
+            "aws s3 cp s3://"
+        )
+        
+        ec2.Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
+
+        CfnOutput(self, "InstanceId", value=ec2_instance.instance_id)
 
         # Define a Lambda function
         lambda_function = _lambda.Function(self, "UsdToGltfConverter",

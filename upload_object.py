@@ -1,3 +1,4 @@
+import json
 import os
 import boto3 # type: ignore
 from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
@@ -5,8 +6,25 @@ from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
 def upload_file_to_s3(file_path, bucket_name, region):
     s3_client = boto3.client('s3', region_name=region)
     try:
-        s3_client.upload_file(file_path, bucket_name, os.path.basename(file_path))
-        print(f"File {file_path} uploaded successfully to bucket '{bucket_name}'.")
+        file_key = os.path.basename(file_path)
+        s3_client.upload_file(file_path, bucket_name, file_key)
+        print(f"File {file_path} uploaded successfully to bucket '{bucket_name}' as '{file_key}'.")
+        
+        metadata_content = {
+            "bucket_name": bucket_name,
+            "file_key": file_key
+        }
+        
+        metadata_file_path = "/tmp/upload_metadata.json"
+        with open(metadata_file_path, "w") as metadata_file:
+            json.dump(metadata_content, metadata_file)
+        
+        metadata_key = "upload_metadata.json"
+        s3_client.upload_file(metadata_file_path, bucket_name, metadata_key)
+        print(f"Metadata uploaded to '{bucket_name}' as ‘{metadata_key}'.")
+        
+        return bucket_name, file_key, metadata_key
+
     except FileNotFoundError:
         print(f"File not found: {file_path}")
     except NoCredentialsError:
@@ -34,6 +52,7 @@ if __name__ == "__main__":
     aws_region = input("Enter your AWS region (should match the CDK deployment region): ")
 
     # Upload the file
-    upload_file_to_s3(file_path, bucket_name, aws_region)
+    uploaded_bucket_name, uploaded_file_key = upload_file_to_s3(file_path, bucket_name, aws_region)
+
 
 
