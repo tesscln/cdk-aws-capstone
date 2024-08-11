@@ -55,21 +55,6 @@ class IotSensorsToDigitalTwinStack(Stack):
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
             ])
-        
-        start_ec2_function = _lambda.Function(self, "StartEC2Function",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            handler="lambda_conversion.lambda_handler",
-            code=_lambda.Code.from_asset("lambda"),
-            environment={
-                "QUEUE_URL": queue.queue_url,
-                "BUCKET_NAME": bucket.bucket_name,
-                "AWS_REGION": aws_region,
-                "INSTANCE_ID": ec2_instance.instance_id
-            },
-            role=lambda_role,
-        )
-        
-        start_ec2_function.add_event_source(lambda_event_sources.SqsEventSource(queue))
 
         ec2_role = iam.Role(self, "EC2Role",
                             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
@@ -95,6 +80,21 @@ class IotSensorsToDigitalTwinStack(Stack):
             "pip3 install boto3",
             "aws s3 cp s3://"
         )
+
+        start_ec2_function = _lambda.Function(self, "StartEC2Function",
+            runtime=_lambda.Runtime.PYTHON_3_8,
+            handler="lambda_conversion.lambda_handler",
+            code=_lambda.Code.from_asset("lambda"),
+            environment={
+                "QUEUE_URL": queue.queue_url,
+                "BUCKET_NAME": bucket.bucket_name,
+                "AWS_REGION": aws_region,
+                "INSTANCE_ID": ec2_instance.instance_id
+            },
+            role=lambda_role,
+        )
+        
+        start_ec2_function.add_event_source(lambda_event_sources.SqsEventSource(queue))
         
         ec2.Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
 
