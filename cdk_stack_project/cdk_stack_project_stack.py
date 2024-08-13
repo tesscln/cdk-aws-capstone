@@ -15,7 +15,8 @@ from aws_cdk import (
     Duration,
     aws_ec2 as ec2,
     aws_sqs as sqs,
-    aws_lambda_event_sources as lambda_event_sources
+    aws_lambda_event_sources as lambda_event_sources,
+    Environment
 )
 
 from constructs import Construct
@@ -26,7 +27,13 @@ class IotSensorsToDigitalTwinStack(Stack):
     def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
                  asset_properties: list, assets: list, rules: list, mqtt_topics: list,
                   sns_topic_arns: dict, aws_region: str, aws_account_id: str, **kwargs) -> None:
-        super().__init__(scope, construct_id, **kwargs)
+        
+        aws_region = self.node.try_get_context('awsRegion')
+        aws_account_id = self.node.try_get_context('awsAccountId')
+        
+        env = Environment(account=aws_account_id, region=aws_region)
+        
+        super().__init__(scope, construct_id, env=env, **kwargs)
 
         # Create an S3 bucket
         bucket = s3.Bucket(self, "AssetModelBucket",
