@@ -16,7 +16,8 @@ from aws_cdk import (
     aws_ec2 as ec2,
     aws_sqs as sqs,
     aws_lambda_event_sources as lambda_event_sources,
-    Environment
+    Environment,
+    Tags
 )
 
 from constructs import Construct
@@ -99,7 +100,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         start_ec2_function.add_event_source(lambda_event_sources.SqsEventSource(queue))
         
-        ec2.Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
+        Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
 
         CfnOutput(self, "InstanceId", value=ec2_instance.instance_id)
 
