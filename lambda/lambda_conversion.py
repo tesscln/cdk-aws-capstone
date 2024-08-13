@@ -4,35 +4,20 @@ import tempfile
 import subprocess
 from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
 
-ec2 = boto3.client('ec2')
 
 def lambda_handler(event, context):
 
-    response = ec2.describe_instances(
-        Filters=[
-            {
-                'Name': 'tag:Purpose',
-                'Values': ['USDToGLTFConversion']
-            }
-        ]
+    region = os.environ['AWS_REGION']
+
+    instance_id = os.environ['INSTANCE_ID']
+
+    print(f"Running in AWS Region: {region}")
+    print(f"Starting EC2 Instance: {instance_id}")
+
+    ec2 = boto3.client('ec2', region_name=region)
+
+    response = ec2.start_instances(
+        InstanceIds=[instance_id]
     )
 
-    # Extract the instance ID
-    instance_ids = [instance['InstanceId']
-                    for reservation in response['Reservations']
-                    for instance in reservation['Instances']]
-
-    # Check if there is at least one instance found
-    if not instance_ids:
-        return {
-            'statusCode': 404,
-            'body': 'No instance found with the specified tag.'
-        }
-
-    # Start the instance
-    ec2.start_instances(InstanceIds=instance_ids)
-
-    return {
-        'statusCode': 200,
-        'body': f'Started instance(s): {instance_ids}'
-    }
+    return response

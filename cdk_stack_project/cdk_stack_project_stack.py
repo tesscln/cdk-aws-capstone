@@ -92,7 +92,6 @@ class IotSensorsToDigitalTwinStack(Stack):
             environment={
                 "QUEUE_URL": queue.queue_url,
                 "BUCKET_NAME": bucket.bucket_name,
-                "AWS_REGION": self.region,
                 "INSTANCE_ID": ec2_instance.instance_id
             },
             role=lambda_role,
