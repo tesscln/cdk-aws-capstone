@@ -26,7 +26,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
                  asset_properties: list, assets: list, rules: list, mqtt_topics: list,
-                  sns_topic_arns: dict, aws_region: str, aws_account_id: str, **kwargs) -> None:
+                  sns_topic_arns: dict, **kwargs) -> None:
         
         aws_region = self.node.try_get_context('awsRegion')
         aws_account_id = self.node.try_get_context('awsAccountId')
