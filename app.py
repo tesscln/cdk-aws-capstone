@@ -72,7 +72,8 @@ IotSensorsToDigitalTwinStack(app, "IotSensorsToDigitalTwinStack",
                      assets,
                      rules, 
                      mqtt_topics,
-                     sns_topic_arns
+                     sns_topic_arns,
+                     env={'account': aws_account_id, 'region': aws_region}
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.

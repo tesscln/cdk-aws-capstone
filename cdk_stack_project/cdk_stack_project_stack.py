@@ -28,12 +28,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                  asset_properties: list, assets: list, rules: list, mqtt_topics: list,
                   sns_topic_arns: dict, **kwargs) -> None:
         
-        aws_region = self.node.try_get_context('awsRegion')
-        aws_account_id = self.node.try_get_context('awsAccountId')
-        
-        env = Environment(account=aws_account_id, region=aws_region)
-        
-        super().__init__(scope, construct_id, env=env, **kwargs)
+        super().__init__(scope, construct_id, **kwargs)
 
         # Create an S3 bucket
         bucket = s3.Bucket(self, "AssetModelBucket",
@@ -95,7 +90,7 @@ class IotSensorsToDigitalTwinStack(Stack):
             environment={
                 "QUEUE_URL": queue.queue_url,
                 "BUCKET_NAME": bucket.bucket_name,
-                "AWS_REGION": aws_region,
+                "AWS_REGION": self.region,
                 "INSTANCE_ID": ec2_instance.instance_id
             },
             role=lambda_role,
