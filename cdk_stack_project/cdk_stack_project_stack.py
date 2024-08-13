@@ -65,13 +65,15 @@ class IotSensorsToDigitalTwinStack(Stack):
                                 iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess")
                             ])
         
+        vpc = ec2.Vpc.from_lookup(self, "DefaultVPC", is_default=True)
+        
         ec2_security_group = ec2.SecurityGroup(self, "SecurityGroup",
-                                           vpc=ec2.Vpc.from_lookup(self, "DefaultVPC", is_default=True))
+                                           vpc=vpc)
         
         ec2_instance = ec2.Instance(self, "ConversionInstance",
                                 instance_type=ec2.InstanceType("t3.micro"),
-                                machine_image=ec2.MachineImage.latest_amazon_linux(),
-                                vpc=ec2_security_group.vpc,
+                                machine_image=ec2.MachineImage.latest_amazon_linux2(),
+                                vpc=vpc,
                                 role=ec2_role,
                                 security_group=ec2_security_group,
                                 user_data=ec2.UserData.for_linux())
