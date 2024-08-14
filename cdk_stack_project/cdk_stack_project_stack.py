@@ -50,15 +50,6 @@ class IotSensorsToDigitalTwinStack(Stack):
             s3.NotificationKeyFilter(suffix=".usd")
         )
         
-        lambda_role = iam.Role(self, "LambdaEC2StartRole",
-            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
-            managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
-            ])
-
         ec2_role = iam.Role(self, "EC2Role",
                             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
                             managed_policies=[
@@ -85,6 +76,19 @@ class IotSensorsToDigitalTwinStack(Stack):
             "pip3 install boto3",
             "aws s3 cp s3://"
         )
+        
+        Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
+
+        CfnOutput(self, "InstanceId", value=ec2_instance.instance_id)
+        
+        lambda_role = iam.Role(self, "LambdaEC2StartRole",
+            assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
+            managed_policies=[
+                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
+                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
+            ])
 
         start_ec2_function = _lambda.Function(self, "StartEC2Function",
             runtime=_lambda.Runtime.PYTHON_3_8,
@@ -99,38 +103,35 @@ class IotSensorsToDigitalTwinStack(Stack):
         )
         
         start_ec2_function.add_event_source(lambda_event_sources.SqsEventSource(queue))
-        
-        Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
 
-        CfnOutput(self, "InstanceId", value=ec2_instance.instance_id)
 
         # Define a Lambda function
-        lambda_function = _lambda.Function(self, "UsdToGltfConverter",
-            runtime=_lambda.Runtime.PYTHON_3_8,
-            handler="lambda_conversion.lambda_handler",
-            code=_lambda.Code.from_asset("lambda"),  # Path to your Lambda code directory
-            timeout=Duration.minutes(5),
-            memory_size=1024,
-            environment={
-                'BUCKET_NAME': bucket.bucket_name
-            }
-        )
+        # lambda_function = _lambda.Function(self, "UsdToGltfConverter",
+        #     runtime=_lambda.Runtime.PYTHON_3_8,
+        #     handler="lambda_conversion.lambda_handler",
+        #     code=_lambda.Code.from_asset("lambda"),  # Path to your Lambda code directory
+        #     timeout=Duration.minutes(5),
+        #     memory_size=1024,
+        #     environment={
+        #         'BUCKET_NAME': bucket.bucket_name
+        #     }
+        # )
 
         # Grant the Lambda function permissions to read/write to the S3 bucket
-        bucket.grant_read_write(lambda_function)
+        # bucket.grant_read_write(lambda_function)
 
-        bucket.add_event_notification(
-            s3.EventType.OBJECT_CREATED,
-            s3_notifications.LambdaDestination(lambda_function),
-            s3.NotificationKeyFilter(suffix='.usd')
-        )
+        # bucket.add_event_notification(
+        #     s3.EventType.OBJECT_CREATED,
+        #     s3_notifications.LambdaDestination(lambda_function),
+        #     s3.NotificationKeyFilter(suffix='.usd')
+        # )
 
-        lambda_function.add_to_role_policy(
-            iam.PolicyStatement(
-                actions=["s3:GetObject", "s3:PutObject"],
-                resources=[bucket.bucket_arn, f"{bucket.bucket_arn}/*"]
-            )
-        )
+        # lambda_function.add_to_role_policy(
+        #     iam.PolicyStatement(
+        #         actions=["s3:GetObject", "s3:PutObject"],
+        #         resources=[bucket.bucket_arn, f"{bucket.bucket_arn}/*"]
+        #     )
+        # )
 
         # Create an S3 bucket for IoT TwinMaker workspace
         twinmaker_bucket = s3.Bucket(self, "TwinMakerBucket",
@@ -146,19 +147,6 @@ class IotSensorsToDigitalTwinStack(Stack):
         twinmaker_role.add_managed_policy(
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
         )
-        
-        # # Grant necessary permissions to the TwinMaker role
-        # twinmaker_role.add_to_policy(iam.PolicyStatement(
-        #     actions=[
-        #         "s3:ListBucket",
-        #         "s3:GetObject",
-        #         "s3:PutObject",
-        #     ],
-        #     resources=[
-        #         twinmaker_bucket.bucket_arn,
-        #         f"{twinmaker_bucket.bucket_arn}/*"
-        #     ]
-        # ))
 
         twinmaker_bucket.add_to_resource_policy(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
@@ -182,32 +170,7 @@ class IotSensorsToDigitalTwinStack(Stack):
             resources=["*"]  # Ideally, specify exact resources if possible
         ))
 
-        # twinmaker_role.attach_inline_policy(
-        #     iam.Policy(self, "TwinMakerPolicy",
-        #                statements=[
-        #                    iam.PolicyStatement(
-        #                        effect=iam.Effect.ALLOW,
-        #                        actions=[
-        #                            "iottwinmaker:CreateWorkspace",
-        #                            "iottwinmaker:DeleteWorkspace",
-        #                            "iottwinmaker:GetWorkspace",
-        #                            "iottwinmaker:ListWorkspaces",
-        #                            "iottwinmaker:UpdateWorkspace",
-        #                            "iottwinmaker:TagResource",
-        #                            "iottwinmaker:UntagResource",
-        #                            "iottwinmaker:ListTagsForResource"
-        #                         ],
-        #                         resources=["*"]  # Specify resources if possible
-        #                     )
-        #                 ])
-        # )
-
         twinmaker_bucket.grant_read_write(twinmaker_role)
-
-        # Retrieve context variables
-       # asset_model_name = self.node.try_get_context('assetModelName')
-        #asset_properties = self.node.try_get_context('assetProperties')
-        #assets = self.node.try_get_context('assets')
 
         print("Asset Model Name:", asset_model_name)
         print("Asset Model Properties input:", asset_properties)
@@ -288,15 +251,6 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         # Attach managed policies to the role
         iot_role.add_managed_policy(iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSIoTRuleActions"))
-
-        # Add trust relationship for TwinMaker if needed
-        # iot_role.add_to_principal_policy(
-        #     iam.PolicyStatement(
-        #         effect=iam.Effect.ALLOW,
-        #         actions=["sts:AssumeRole"],
-        #         principals=[iam.ServicePrincipal("iottwinmaker.amazonaws.com")]
-        #     )
-        # )
 
         # Attach custom inline policy
         iot_role.attach_inline_policy(
@@ -456,26 +410,6 @@ class IotSensorsToDigitalTwinStack(Stack):
             asset_name = rule['actions'][0]['assetName']
             mqtt_topic = rule['actions'][0]['mqttTopic']
             sql_statement = f"SELECT {', '.join([action['sensorData'] for action in rule['actions']])}, timeInSeconds FROM '{mqtt_topic}'"
-           # actions = [
-                #iot.CfnTopicRule.ActionProperty(
-                   # iot_site_wise=iot.CfnTopicRule.IotSiteWiseActionProperty(
-                        #role_arn=iot_role.role_arn,
-                       # put_asset_property_value_entries=[
-                            #iot.CfnTopicRule.PutAssetPropertyValueEntryProperty(
-                              #               value=iot.CfnTopicRule.AssetPropertyVariantProperty(
-                        #                    double_value="$.sensordata"
-                       #                 ),
-                      #                  timestamp=iot.CfnTopicRule.AssetPropertyTimestampProperty(
-                     #                       time_in_seconds="$.timeInSeconds"
-                    #                    ),
-                   #                     quality="GOOD"
-                  #                  )
-                 #               ]
-                #            ) for action in rule['actions']
-               #         ]
-              #      )
-             #   )
-            #]
 
             # Create actions for each property
             actions = []
@@ -543,7 +477,3 @@ class IotSensorsToDigitalTwinStack(Stack):
                 CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
 
         CfnOutput(self, "WorkspaceId", value=workspace.workspace_id)
-
-#app = core.App()
-#CdkStackProjectStack(app, "cdk-stack-project")
-#app.synth()
