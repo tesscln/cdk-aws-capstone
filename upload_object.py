@@ -52,7 +52,7 @@ if __name__ == "__main__":
     aws_region = input("Enter your AWS region (should match the CDK deployment region): ")
 
     # Upload the file
-    uploaded_bucket_name, uploaded_file_key = upload_file_to_s3(file_path, bucket_name, aws_region)
+    uploaded_bucket_name, uploaded_file_key, uploaded_metadata_key = upload_file_to_s3(file_path, bucket_name, aws_region)
 
 
 
