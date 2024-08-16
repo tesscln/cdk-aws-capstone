@@ -1,16 +1,13 @@
+# CDK stack for data ingestion pipeline matching IoT sensors data to a 3D CAD asset. 
 
-# Version 2 complete version: need to check Rule outcome/ property IDs etc.
+## Introduction
 
-This is a blank project for CDK development with Python.
+## How to run the cdk
 
-The `cdk.json` file tells the CDK Toolkit how to execute your app.
+First of all, log into the terminal using your credential keys.
 
-This project is set up like a standard Python project.  The initialization
-process also creates a virtualenv within this project, stored under the `.venv`
-directory.  To create the virtualenv it assumes that there is a `python3`
-(or `python` for Windows) executable in your path with access to the `venv`
-package. If for any reason the automatic creation of the virtualenv fails,
-you can create the virtualenv manually.
+Clone the repo locally.
+
 
 To manually create a virtualenv on MacOS and Linux:
 
@@ -37,30 +34,6 @@ Once the virtualenv is activated, you can install the required dependencies.
 $ pip install -r requirements.txt
 ```
 
-At this point you can now synthesize the CloudFormation template for this code.
-
-```
-$ cdk synth
-```
-
-To add additional dependencies, for example other CDK libraries, just add
-them to your `setup.py` file and rerun the `pip install -r requirements.txt`
-command.
-
-## Useful commands
-
- * `cdk ls`          list all stacks in the app
- * `cdk synth`       emits the synthesized CloudFormation template
- * `cdk deploy`      deploy this stack to your default AWS account/region
- * `cdk diff`        compare deployed stack with current state
- * `cdk docs`        open CDK documentation
-
-Enjoy!
-
-CDK template for Spatial Computing pipeline:
-
-This CF stack enables one to deploy a pipeline connecting 3D CAD assets to data streams coming from IoT sensors. It follows the below diagram architecture. (cf diagram drawio)
-
-First, it creates a rule in AWS IoT (former AWS IoT Core) matching the data streams published in a MQTT messages topic to the corresponding assets created in AWS IoT SiteWise. Next, these assets are synchronized in AWS IoT TwinMaker and a digital twin representation is created. 
-
-# Testing the versions of brnahcessfnezklfjzeljgz
+Now, you can run '''python deploy.py'''
+It will ask you to enter your AWS-REGION and AWS ACCOUNT_ID.
+Then, it will ask you for a number of properties. This number should correspond to the number of data streams you would like to match to your 3D object. 
