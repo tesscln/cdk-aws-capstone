@@ -42,7 +42,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         CfnOutput(self, "BucketName", value=bucket.bucket_name, export_name="MyBucketName")
 
         # Define the path to the ec2_conversion.py script
-        script_path = os.path.join(os.path.dirname(__file__), "ec2_conversion.py")
+        script_path = os.path.join(os.path.dirname(__file__), "scripts", "ec2_conversion.py")
 
         s3_deployment.BucketDeployment(self, "DeployEC2ConversionScript",
                                        sources=[s3_deployment.Source.asset(script_path)],
