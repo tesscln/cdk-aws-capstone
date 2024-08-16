@@ -17,11 +17,13 @@ from aws_cdk import (
     aws_sqs as sqs,
     aws_lambda_event_sources as lambda_event_sources,
     Environment,
-    Tags
+    Tags,
+    aws_s3_deployment as s3_deployment
 )
 
 from constructs import Construct
 import json
+import os
 
 class IotSensorsToDigitalTwinStack(Stack):
 
@@ -38,6 +40,14 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         # Output the bucket name to use it later
         CfnOutput(self, "BucketName", value=bucket.bucket_name, export_name="MyBucketName")
+
+        # Define the path to the ec2_conversion.py script
+        script_path = os.path.join(os.path.dirname(__file__), "ec2_conversion.py")
+
+        s3_deployment.BucketDeployment(self, "DeployEC2ConversionScript",
+                                       sources=[s3_deployment.Source.asset(script_path)],
+                                       destination_bucket=bucket,
+                                       destination_key_prefix="scripts")
         
         #bucket_output = self.node.try_get_context("BucketName")
         #bucket_output.add_override("value", bucket.bucket_name)
@@ -74,7 +84,8 @@ class IotSensorsToDigitalTwinStack(Stack):
             "yum update -y",
             "yum install -y blender python3-pip",
             "pip3 install boto3",
-            "aws s3 cp s3://"
+            f"aws s3 cp s3://{bucket.bucket_name}/ec2_conversion.py /home/ec2-user/ec2_conversion.py",
+            "/usr/bin/python3 /home/ec2-user/ec2_conversion.py"
         )
         
         Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
