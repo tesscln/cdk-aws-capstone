@@ -63,8 +63,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         ec2_role = iam.Role(self, "EC2Role",
                             assumed_by=iam.ServicePrincipal("ec2.amazonaws.com"),
                             managed_policies=[
-                                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess")
+                                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
                             ])
         
         vpc = ec2.Vpc.from_lookup(self, "DefaultVPC", is_default=True)
@@ -95,10 +94,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         lambda_role = iam.Role(self, "LambdaEC2StartRole",
             assumed_by=iam.ServicePrincipal("lambda.amazonaws.com"),
             managed_policies=[
-                iam.ManagedPolicy.from_aws_managed_policy_name("service-role/AWSLambdaBasicExecutionRole"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonEC2FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess"),
-                iam.ManagedPolicy.from_aws_managed_policy_name("AmazonSQSFullAccess")
+                iam.ManagedPolicy.from_aws_managed_policy_name("AdministratorAccess")
             ])
 
         start_ec2_function = _lambda.Function(self, "StartEC2Function",
