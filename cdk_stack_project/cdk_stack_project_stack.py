@@ -83,7 +83,8 @@ class IotSensorsToDigitalTwinStack(Stack):
             "yum update -y",
             "yum install -y blender python3-pip",
             "pip3 install boto3",
-            f"aws s3 cp s3://{bucket.bucket_name}/ec2_conversion.py /home/ec2-user/ec2_conversion.py",
+            "sleep 30",
+            f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ec2-user/ec2_conversion.py",
             "/usr/bin/python3 /home/ec2-user/ec2_conversion.py"
         )
         

@@ -37,3 +37,5 @@ $ pip install -r requirements.txt
 Now, you can run '''python deploy.py'''
 It will ask you to enter your AWS-REGION and AWS ACCOUNT_ID.
 Then, it will ask you for a number of properties. This number should correspond to the number of data streams you would like to match to your 3D object. 
+
+If you want to delete the stack, you can do so in the CloudFormation console. However, you have to ensure before that the S3 bucket called 'asset-model-usdfilebucket' is emptied. 
