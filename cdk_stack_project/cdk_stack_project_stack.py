@@ -250,30 +250,6 @@ class IotSensorsToDigitalTwinStack(Stack):
         # Create an IoT SiteWise asset belonging to the created asset model
 
         for asset in assets:
-            entity = iottwinmaker.CfnEntity(self, f"{asset['name']}Entity",
-                                            entity_name=asset['name'],
-                                            workspace_id=workspace.workspace_id,
-                                            components={
-                                                "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
-                                                    component_type_id="com.amazon.iotsitewise.asset",
-                                                    property_groups={
-                                                        "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
-                                                            group_type="Default",
-                                                            property_names=[
-                                                                "siteWiseAssetId"
-                                                            ]
-                                                        )
-                                                    },
-                                                    properties={
-                                                        "siteWiseAssetId": iottwinmaker.CfnEntity.PropertyProperty(
-                                                            value=iottwinmaker.CfnEntity.DataValueProperty(
-                                                                string_value=asset_ids[asset['name']]
-                                                            )
-                                                        )
-                                                    }
-                                                )
-                                            })
-
             asset_properties = [
                 sitewise.CfnAsset.AssetPropertyProperty(
                     logical_id=prop.get('logicalId', ""),
@@ -424,6 +400,31 @@ class IotSensorsToDigitalTwinStack(Stack):
                            )
                        ])
         )
+
+        for asset in assets:
+            entity = iottwinmaker.CfnEntity(self, f"{asset['name']}Entity",
+                                            entity_name=asset['name'],
+                                            workspace_id=workspace.workspace_id,
+                                            components={
+                                                "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
+                                                    component_type_id="com.amazon.iotsitewise.asset",
+                                                    property_groups={
+                                                        "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
+                                                            group_type="Default",
+                                                            property_names=[
+                                                                "siteWiseAssetId"
+                                                            ]
+                                                        )
+                                                    },
+                                                    properties={
+                                                        "siteWiseAssetId": iottwinmaker.CfnEntity.PropertyProperty(
+                                                            value=iottwinmaker.CfnEntity.DataValueProperty(
+                                                                string_value=asset_ids[asset['name']]
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            })
 
 
         # Grant the IoT role read/write permissions to the bucket
