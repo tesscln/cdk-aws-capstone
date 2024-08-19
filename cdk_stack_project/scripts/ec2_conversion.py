@@ -8,6 +8,7 @@ from botocore.exceptions import NoCredentialsError, ClientError # type: ignore
 
 s3_client = boto3.client('s3')
 
+logging.basicConfig(filename='/var/log/ec2_conversion.log', level=logging.INFO, format='%(asctime)s %(message)s')
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 log_handler = logging.FileHandler('/tmp/conversion_log.txt')
@@ -31,6 +32,9 @@ def convert_usd_to_gltf(input_usd, output_gltf):
         logger.info(f"Running conversion command: {command}")
         subprocess.run(command, shell=True, check=True)
         logger.info(f"Conversion successful: {output_gltf}")
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Conversion failed with error: {e}")
+        raise
     except Exception as e:
         logger.error(f"Conversion failed: {str(e)}")
         raise
@@ -70,23 +74,21 @@ def process_file(bucket_name, usd_key):
         logger.error(f"Client error: {e}")
     except Exception as e:
         logger.error(f"Failed to process file: {str(e)}")
-    finally:
-        upload_log_to_s3(bucket_name)
         
-    # Define where your metadata file is stored in S3
-    bucket_name = os.environ['BUCKET_NAME']
-    metadata_key = "upload_metadata.json"
+    # # Define where your metadata file is stored in S3
+    # bucket_name = os.environ['BUCKET_NAME']
+    # metadata_key = "upload_metadata.json"
     
-    # Download the metadata file
-    metadata_file_path = os.path.join(tempfile.gettempdir(), "upload_metadata.json")
-    #s3_client.download_file(bucket_name, metadata_key, metadata_file_path)
+    # # Download the metadata file
+    # metadata_file_path = os.path.join(tempfile.gettempdir(), "upload_metadata.json")
+    # #s3_client.download_file(bucket_name, metadata_key, metadata_file_path)
 
-    # Load metadata from the file
-    with open(metadata_file_path, "r") as metadata_file:
-        metadata_content = json.load(metadata_file)
+    # # Load metadata from the file
+    # with open(metadata_file_path, "r") as metadata_file:
+    #     metadata_content = json.load(metadata_file)
     
-    # Extract bucket name and file key
-    usd_key = metadata_content['file_key']
+    # # Extract bucket name and file key
+    # usd_key = metadata_content['file_key']
 
 bucket_name = os.environ['BUCKET_NAME']
 
@@ -101,4 +103,8 @@ with open(metadata_file_path, "r") as metadata_file:
 usd_key = metadata_content['file_key']
 
 if __name__ == "__main__":
+    bucket_name = os.environ['BUCKET_NAME']
+    usd_key = metadata_content['file_key']
+    logger.info(f"Starting process with bucket: {bucket_name} and key: {usd_key}")
     process_file(bucket_name, usd_key)
+    logger.info("Process completed.")
