@@ -122,6 +122,7 @@ if __name__ == "__main__":
     print("MQTT Topics:", mqtt_topics)
     rules = get_rules_info(assets)
     print("Rules Info:", rules)
+    print(f"GLTF file path provided: {gltf_file_path}")
 
     bucket_name = f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket"
     os.environ['BUCKET_NAME'] = bucket_name

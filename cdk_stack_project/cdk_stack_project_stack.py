@@ -164,7 +164,8 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         s3_deployment.BucketDeployment(self, "DeployGLTFFile",
                                        sources=[s3_deployment.Source.asset(gltf_file_path)],
-                                       destination_bucket=twinmaker_bucket)
+                                       destination_bucket=twinmaker_bucket,
+                                       destination_key_prefix="models")
 
         # Create an IAM role for TwinMaker with S3 access
         twinmaker_role = iam.Role(self, "TwinMakerRole",
