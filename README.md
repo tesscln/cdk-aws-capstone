@@ -36,7 +36,7 @@ $ pip install -r requirements.txt
 
 ## Deploying the stack
 
-You can run '''python deploy.py'''.
+You can run ```python deploy.py```.
 
 1. Enter your AWS-REGION and AWS ACCOUNT_ID.
 
@@ -61,7 +61,7 @@ The CDK will now deploy and created all the above.
 
 ## Uploading a 3D asset
 
-You can run '''python upload_object.py'''.
+You can run ```python upload_object.py```.
 
 It will ask you to enter the file path to your .usd file. It will then ask you for the bucket name to which you upload the file. This bucket is created previously with the cdk and should have the name 'assetmodel-usdfilebucket'. You should find it in the outputs of the cdk as well, either on your terminal or in CloudFormation directly. 
 
