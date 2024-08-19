@@ -410,7 +410,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                                     component_type_id="com.amazon.iotsitewise.asset",
                                                     property_groups={
                                                         "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
-                                                            group_type="Default",
+                                                            group_type="TABULAR",
                                                             property_names=[
                                                                 "siteWiseAssetId"
                                                             ]
