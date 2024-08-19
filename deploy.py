@@ -69,6 +69,7 @@ def get_assets_info(properties):
     return assets
 
 # Function to collect MQTT topic subscription information
+
 def get_mqtt_topics():
     num_topics = int(input("Enter the number of MQTT topics to subscribe to: "))
     topics = []
@@ -80,10 +81,12 @@ def get_mqtt_topics():
     return topics
 
 # Ask the user for region and account ID
+
 aws_region = input("Enter your AWS region: ")
 aws_account_id = input("Enter your AWS account ID: ")
 
 # Function to collect IoT Core rules information
+
 def get_rules_info(assets):
     num_rules = int(input("Enter the number of rules (each rule will link data streams from sensors to a specific asset i.e. create one rule/asset): "))
     rules = []

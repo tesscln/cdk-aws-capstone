@@ -31,12 +31,14 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         super().__init__(scope, construct_id, **kwargs)
 
-        # Create an S3 bucket
+        # Creating an S3 bucket to store the usd file
+
         bucket = s3.Bucket(self, "AssetModelBucket",
                            bucket_name=f"{asset_model_name.lower().replace(' ', '-')}-usdfilebucket",
                            removal_policy=RemovalPolicy.DESTROY)
 
         # Output the bucket name to use it later
+        
         CfnOutput(self, "BucketName", value=bucket.bucket_name, export_name="MyBucketName")
         
         #bucket_output = self.node.try_get_context("BucketName")

@@ -8,7 +8,7 @@ from cdk_stack_project.cdk_stack_project_stack import IotSensorsToDigitalTwinSta
 app = App()
 
 
-# Reading context variables:
+# Reading the context variables:
 
 asset_model_name = app.node.try_get_context("assetModelName")
 asset_properties = app.node.try_get_context("assetProperties")
@@ -19,7 +19,8 @@ sns_topic_arns = app.node.try_get_context('snsTopicArns')
 aws_region = app.node.try_get_context('awsRegion')
 aws_account_id = app.node.try_get_context('awsAccountId')
 
-# Ensure context variables are parsed correctly
+# Ensuring the context variables are parsed correctly
+
 if isinstance(asset_properties, str):
     try:
         asset_properties = json.loads(asset_properties)
