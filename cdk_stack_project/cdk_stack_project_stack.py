@@ -29,7 +29,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
                  asset_properties: list, assets: list, rules: list, mqtt_topics: list,
-                  sns_topic_arns: dict, **kwargs) -> None:
+                  sns_topic_arns: dict, gltf_file_path: str, **kwargs) -> None:
         
         super().__init__(scope, construct_id, **kwargs)
 
@@ -162,6 +162,10 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         CfnOutput(self, "TwinMakerBucketName", value=twinmaker_bucket.bucket_name)
 
+        s3_deployment.BucketDeployment(self, "DeployGLTFFile",
+                                       sources=[s3_deployment.Source.asset(gltf_file_path)],
+                                       destination_bucket=twinmaker_bucket)
+
         # Create an IAM role for TwinMaker with S3 access
         twinmaker_role = iam.Role(self, "TwinMakerRole",
                                   assumed_by=iam.ServicePrincipal("iottwinmaker.amazonaws.com"))
@@ -237,12 +241,43 @@ class IotSensorsToDigitalTwinStack(Stack):
         asset_ids = {}  # Store both the asset IDs and property aliases for Rule creation in IoT Core.
         property_aliases = {}
         
+        # Create a workspace in IoT TwinMaker
+
+        workspace_name = f"{asset_model_name}-workspace"
+        workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
+                                              role=twinmaker_role.role_arn,
+                                              s3_location=twinmaker_bucket.bucket_arn,
+                                               workspace_id=workspace_name)
 
         # Create IoT SiteWise assets
         
         # Create an IoT SiteWise asset belonging to the created asset model
 
         for asset in assets:
+            entity = iottwinmaker.CfnEntity(self, f"{asset['name']}Entity",
+                                            entity_name=asset['name'],
+                                            workspace_id=workspace.workspace_id,
+                                            components={
+                                                "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
+                                                    component_type_id="com.amazon.iotsitewise.asset",
+                                                    property_groups={
+                                                        "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
+                                                            group_type="Default",
+                                                            property_names=[
+                                                                "siteWiseAssetId"
+                                                            ]
+                                                        )
+                                                    },
+                                                    properties={
+                                                        "siteWiseAssetId": iottwinmaker.CfnEntity.PropertyProperty(
+                                                            value=iottwinmaker.CfnEntity.DataValueProperty(
+                                                                string_value=asset_ids[asset['name']]
+                                                            )
+                                                        )
+                                                    }
+                                                )
+                                            })
+
             asset_properties = [
                 sitewise.CfnAsset.AssetPropertyProperty(
                     logical_id=prop.get('logicalId', ""),
@@ -481,16 +516,13 @@ class IotSensorsToDigitalTwinStack(Stack):
                                  actions=actions,
                                  rule_disabled=False
                              ))
-            
-        # Create a workspace in IoT TwinMaker
-
-        workspace_name = f"{asset_model_name}-workspace"
-        workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
-                                              role=twinmaker_role.role_arn,
-                                              s3_location=twinmaker_bucket.bucket_arn,
-                                               workspace_id=workspace_name)
         
-            
+        scene = iottwinmaker.CfnScene(self, "Scene",
+                                      scene_id="default_scene",
+                                      workspace_id=workspace.workspace_id,
+                                      content_location=f"s3://{twinmaker_bucket.bucket_name}/gltf/",
+                                      capabilities=["3dt/assets"])
+
         # Output asset and property IDs to verify them
 
         for asset_name, asset_id in asset_ids.items():
@@ -499,3 +531,4 @@ class IotSensorsToDigitalTwinStack(Stack):
                 CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
 
         CfnOutput(self, "WorkspaceId", value=workspace.workspace_id)
+        CfnOutput(self, "SceneId", value=scene.scene_id)

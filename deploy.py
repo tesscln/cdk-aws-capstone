@@ -82,6 +82,7 @@ def get_mqtt_topics():
 # Ask the user for region and account ID
 aws_region = input("Enter your AWS region: ")
 aws_account_id = input("Enter your AWS account ID: ")
+gltf_file_path = input("Enter the path to the GLTF file: ")
 
 # Function to collect IoT Core rules information
 def get_rules_info(assets):
@@ -157,6 +158,7 @@ if __name__ == "__main__":
         f'--context snsTopicArns={shlex.quote(sns_topic_arns_json)} '
         f'--context awsRegion={shlex.quote(aws_region)} '
         f'--context awsAccountId={shlex.quote(aws_account_id)}'
+        f'--context gltfFilePath={shlex.quote(gltf_file_path)}'
     )
 
     print("Deploy command:", deploy_command)
