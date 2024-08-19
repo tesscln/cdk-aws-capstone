@@ -79,16 +79,28 @@ class IotSensorsToDigitalTwinStack(Stack):
                                 vpc=vpc,
                                 role=ec2_role,
                                 security_group=ec2_security_group,
-                                user_data=ec2.UserData.for_linux())
+                                user_data=ec2.UserData.custom(
+                                    "\n".join([
+                                        "apt-get update -y",
+                                        "apt-get install -y blender python3-pip",
+                                        "pip3 install boto3",
+                                        f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ubuntu/ec2_conversion.py",
+                                        "if [ -f /home/ubuntu/ec2_conversion.py ]; then echo 'ec2_conversion.py downloaded successfully.' >> /var/log/cloud-init-output.log; else echo 'Failed to download ec2_conversion.py.' >> /var/log/cloud-init-output.log; fi",
+                                        "chmod +x /home/ubuntu/ec2_conversion.py",
+                                        "echo 'Starting ec2_conversion.py execution...' >> /var/log/cloud-init-output.log",
+                                        "chmod +x /home/ubuntu/ec2_conversion.py",
+                                        "python3 /home/ubuntu/ec2_conversion.py > /var/log/ec2_conversion.log 2>&1"
+                                    ])
+                                ))
         
-        ec2_instance.user_data.add_commands(
-            "apt-get update -y",
-            "apt-get install -y blender python3-pip",
-            "pip3 install boto3",
-            "sleep 30",
-            f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ubuntu/ec2_conversion.py",
-            "python3 /home/ubuntu/ec2_conversion.py"
-        )
+        # ec2_instance.user_data.add_commands(
+        #     "apt-get update -y",
+        #     "apt-get install -y blender python3-pip",
+        #     "pip3 install boto3",
+        #     "sleep 30",
+        #     f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ubuntu/ec2_conversion.py",
+        #     "python3 /home/ubuntu/ec2_conversion.py"
+        # )
         
         Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
 
