@@ -73,19 +73,21 @@ class IotSensorsToDigitalTwinStack(Stack):
         
         ec2_instance = ec2.Instance(self, "ConversionInstance",
                                 instance_type=ec2.InstanceType("t3.micro"),
-                                machine_image=ec2.MachineImage.latest_amazon_linux2(),
+                                machine_image=ec2.MachineImage.generic_linux({
+                                    "us-east-1": "ami-0a313d6098716f372"
+                                }),
                                 vpc=vpc,
                                 role=ec2_role,
                                 security_group=ec2_security_group,
                                 user_data=ec2.UserData.for_linux())
         
         ec2_instance.user_data.add_commands(
-            "yum update -y",
-            "yum install -y blender python3-pip",
+            "apt-get update -y",
+            "apt-get install -y blender python3-pip",
             "pip3 install boto3",
             "sleep 30",
-            f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ec2-user/ec2_conversion.py",
-            "/usr/bin/python3 /home/ec2-user/ec2_conversion.py"
+            f"aws s3 cp s3://{bucket.bucket_name}/scripts/ec2_conversion.py /home/ubuntu/ec2_conversion.py",
+            "python3 /home/ubuntu/ec2_conversion.py"
         )
         
         Tags.of(ec2_instance).add("Purpose", "USDToGLTFConversion")
