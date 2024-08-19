@@ -401,21 +401,21 @@ class IotSensorsToDigitalTwinStack(Stack):
                        ])
         )
 
-        component_type = iottwinmaker.CfnComponentType(
-            self, "IoTSiteWiseComponentType",
-            workspace_id=workspace.workspace_id,
-            component_type_id="com.amazon.iotsitewise.asset",
-            extends_from=["com.amazon.iottwinmaker.default"],
-            functions={},
-            property_definitions={
-                "siteWiseAssetId": iottwinmaker.CfnComponentType.PropertyDefinitionProperty(
-                    is_external_id=True,
-                    data_type=iottwinmaker.CfnComponentType.DataTypeProperty(
-                        type="STRING"
-                    )
-                )
-            }
-        )
+        # component_type = iottwinmaker.CfnComponentType(
+        #     self, "IoTSiteWiseComponentType",
+        #     workspace_id=workspace.workspace_id,
+        #     component_type_id="com.amazon.iotsitewise.asset",
+        #     extends_from=["com.amazon.iottwinmaker.default"],
+        #     functions={},
+        #     property_definitions={
+        #         "siteWiseAssetId": iottwinmaker.CfnComponentType.PropertyDefinitionProperty(
+        #             is_external_id=True,
+        #             data_type=iottwinmaker.CfnComponentType.DataTypeProperty(
+        #                 type="STRING"
+        #             )
+        #         )
+        #     }
+        # )
 
         for asset in assets:
             entity = iottwinmaker.CfnEntity(self, f"{asset['name']}Entity",
@@ -423,7 +423,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                             workspace_id=workspace.workspace_id,
                                             components={
                                                 "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
-                                                    component_type_id=component_type.component_type_id,
+                                                    component_type_id="com.amazon.iotsitewise.asset",
                                                     property_groups={
                                                         "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
                                                             group_type="TABULAR",
