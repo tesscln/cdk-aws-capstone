@@ -29,7 +29,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
     def __init__(self, scope: Construct, construct_id: str, asset_model_name: str,
                  asset_properties: list, assets: list, rules: list, mqtt_topics: list,
-                  sns_topic_arns: dict, gltf_file_path: str, **kwargs) -> None:
+                  sns_topic_arns: dict, **kwargs) -> None:
         
         super().__init__(scope, construct_id, **kwargs)
 
@@ -161,11 +161,6 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         
         CfnOutput(self, "TwinMakerBucketName", value=twinmaker_bucket.bucket_name)
-
-        s3_deployment.BucketDeployment(self, "DeployGLTFFile",
-                                       sources=[s3_deployment.Source.asset(gltf_file_path)],
-                                       destination_bucket=twinmaker_bucket,
-                                       destination_key_prefix="models")
 
         # Create an IAM role for TwinMaker with S3 access
         twinmaker_role = iam.Role(self, "TwinMakerRole",
@@ -518,11 +513,11 @@ class IotSensorsToDigitalTwinStack(Stack):
                                  rule_disabled=False
                              ))
         
-        scene = iottwinmaker.CfnScene(self, "Scene",
-                                      scene_id="default_scene",
-                                      workspace_id=workspace.workspace_id,
-                                      content_location=f"s3://{twinmaker_bucket.bucket_name}/gltf/",
-                                      capabilities=["3dt/assets"])
+        # scene = iottwinmaker.CfnScene(self, "Scene",
+        #                               scene_id="default_scene",
+        #                               workspace_id=workspace.workspace_id,
+        #                               content_location=f"s3://{twinmaker_bucket.bucket_name}/gltf/",
+        #                               capabilities=["3dt/assets"])
 
         # Output asset and property IDs to verify them
 
@@ -532,4 +527,4 @@ class IotSensorsToDigitalTwinStack(Stack):
                 CfnOutput(self, f"{asset_name}{prop_name}PropertyAlias", value=prop_alias)
 
         CfnOutput(self, "WorkspaceId", value=workspace.workspace_id)
-        CfnOutput(self, "SceneId", value=scene.scene_id)
+        #CfnOutput(self, "SceneId", value=scene.scene_id)

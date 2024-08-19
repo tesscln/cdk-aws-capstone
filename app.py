@@ -18,7 +18,6 @@ mqtt_topics = app.node.try_get_context('mqttTopics')
 sns_topic_arns = app.node.try_get_context('snsTopicArns')
 aws_region = app.node.try_get_context('awsRegion')
 aws_account_id = app.node.try_get_context('awsAccountId')
-gltf_file_path= app.node.try_get_context('gltfFilePath')
 
 # Ensure context variables are parsed correctly
 if isinstance(asset_properties, str):
@@ -74,8 +73,7 @@ IotSensorsToDigitalTwinStack(app, "IotSensorsToDigitalTwinStack",
                      rules, 
                      mqtt_topics,
                      sns_topic_arns,
-                     env={'account': aws_account_id, 'region': aws_region},
-                     gltf_file_path=gltf_file_path
+                     env={'account': aws_account_id, 'region': aws_region}
     # If you don't specify 'env', this stack will be environment-agnostic.
     # Account/Region-dependent features and context lookups will not work,
     # but a single synthesized template can be deployed anywhere.
