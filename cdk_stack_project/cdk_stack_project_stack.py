@@ -423,7 +423,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                             workspace_id=workspace.workspace_id,
                                             components={
                                                 "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
-                                                    component_type_id="com.amazon.iotsitewise.asset",
+                                                    component_type_id="com.amazon.iotsitewise.connector",
                                                     property_groups={
                                                         "default": iottwinmaker.CfnEntity.PropertyGroupProperty(
                                                             group_type="TABULAR",
