@@ -243,7 +243,7 @@ class IotSensorsToDigitalTwinStack(Stack):
         workspace = iottwinmaker.CfnWorkspace(self, "Workspace",
                                               role=twinmaker_role.role_arn,
                                               s3_location=twinmaker_bucket.bucket_arn,
-                                               workspace_id=workspace_name)
+                                              workspace_id=workspace_name)
 
         # Create IoT SiteWise assets
         
@@ -418,8 +418,10 @@ class IotSensorsToDigitalTwinStack(Stack):
         # )
 
         for asset in assets:
-            entity = iottwinmaker.CfnEntity(self, f"{asset['name']}Entity",
-                                            entity_name=asset['name'],
+            asset_name = asset['name']
+            sitewise_asset_id = asset['siteWiseAssetId']
+            entity = iottwinmaker.CfnEntity(self, f"{asset_name}Entity",
+                                            entity_name=asset_name,
                                             workspace_id=workspace.workspace_id,
                                             components={
                                                 "SiteWiseComponent": iottwinmaker.CfnEntity.ComponentProperty(
@@ -435,7 +437,7 @@ class IotSensorsToDigitalTwinStack(Stack):
                                                     properties={
                                                         "siteWiseAssetId": iottwinmaker.CfnEntity.PropertyProperty(
                                                             value=iottwinmaker.CfnEntity.DataValueProperty(
-                                                                string_value=asset_ids[asset['name']]
+                                                                string_value=sitewise_asset_id
                                                             )
                                                         )
                                                     }
