@@ -419,7 +419,7 @@ class IotSensorsToDigitalTwinStack(Stack):
 
         for asset in assets:
             asset_name = asset['name']
-            sitewise_asset_id = asset['siteWiseAssetId']
+            sitewise_asset_id = asset_ids[asset_name]
             entity = iottwinmaker.CfnEntity(self, f"{asset_name}Entity",
                                             entity_name=asset_name,
                                             workspace_id=workspace.workspace_id,
