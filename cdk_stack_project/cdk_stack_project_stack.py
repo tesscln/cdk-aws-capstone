@@ -170,6 +170,15 @@ class IotSensorsToDigitalTwinStack(Stack):
             iam.ManagedPolicy.from_aws_managed_policy_name("AmazonS3FullAccess")
         )
 
+        # Add permission for SiteWise integration
+        twinmaker_role.add_to_policy(
+            iam.PolicyStatement(
+                effect=iam.Effect.ALLOW,
+                actions=["iotsitewise:EnableSiteWiseIntegration"],
+                resources=["*"]
+            )
+        )
+
         twinmaker_bucket.add_to_resource_policy(iam.PolicyStatement(
             effect=iam.Effect.ALLOW,
             actions=["s3:GetObject", "s3:PutObject"],
